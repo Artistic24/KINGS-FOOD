@@ -1,0 +1,17 @@
+{
+  "appId": "app.lovable.kingsfood",
+  "appName": "KINGS FOOD",
+  "webDir": "android-shell",
+  "server": {
+    "url": "https://kings-marketplace.lovable.app",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "Geolocation": {},
+    "Camera": {}
+  }
+}
