@@ -1,0 +1,152 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* St Kingston — Bold & Vibrant African Market design system */
+
+@theme inline {
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-saffron: var(--saffron);
+  --color-saffron-foreground: var(--saffron-foreground);
+  --color-forest: var(--forest);
+  --color-forest-foreground: var(--forest-foreground);
+  --color-clay: var(--clay);
+
+  --shadow-warm: 0 12px 32px -12px color-mix(in oklab, var(--primary) 35%, transparent);
+  --shadow-pop: 0 8px 24px -8px color-mix(in oklab, var(--foreground) 25%, transparent);
+}
+
+:root {
+  --radius: 0.875rem;
+
+  /* Warm cream paper */
+  --background: oklch(0.985 0.014 75);
+  --foreground: oklch(0.22 0.04 50);
+
+  --card: oklch(1 0.005 75);
+  --card-foreground: oklch(0.22 0.04 50);
+  --popover: oklch(1 0.005 75);
+  --popover-foreground: oklch(0.22 0.04 50);
+
+  /* Terracotta / burnt orange */
+  --primary: oklch(0.58 0.19 38);
+  --primary-foreground: oklch(0.99 0.01 90);
+
+  /* Forest green */
+  --secondary: oklch(0.42 0.10 148);
+  --secondary-foreground: oklch(0.99 0.01 90);
+
+  --muted: oklch(0.94 0.015 75);
+  --muted-foreground: oklch(0.45 0.03 50);
+
+  /* Saffron — call to action accents */
+  --accent: oklch(0.82 0.16 82);
+  --accent-foreground: oklch(0.22 0.04 50);
+  --saffron: oklch(0.82 0.16 82);
+  --saffron-foreground: oklch(0.22 0.04 50);
+
+  --forest: oklch(0.42 0.10 148);
+  --forest-foreground: oklch(0.99 0.01 90);
+
+  --clay: oklch(0.65 0.13 45);
+
+  --destructive: oklch(0.55 0.22 27);
+  --destructive-foreground: oklch(0.99 0.01 90);
+
+  --border: oklch(0.88 0.02 70);
+  --input: oklch(0.88 0.02 70);
+  --ring: oklch(0.58 0.19 38);
+}
+
+.dark {
+  --background: oklch(0.18 0.025 45);
+  --foreground: oklch(0.97 0.015 80);
+  --card: oklch(0.22 0.03 45);
+  --card-foreground: oklch(0.97 0.015 80);
+  --popover: oklch(0.22 0.03 45);
+  --popover-foreground: oklch(0.97 0.015 80);
+  --primary: oklch(0.68 0.18 38);
+  --primary-foreground: oklch(0.18 0.025 45);
+  --secondary: oklch(0.48 0.10 148);
+  --secondary-foreground: oklch(0.97 0.015 80);
+  --muted: oklch(0.28 0.025 45);
+  --muted-foreground: oklch(0.72 0.02 80);
+  --accent: oklch(0.78 0.15 82);
+  --accent-foreground: oklch(0.18 0.025 45);
+  --saffron: oklch(0.82 0.16 82);
+  --saffron-foreground: oklch(0.18 0.025 45);
+  --forest: oklch(0.55 0.11 148);
+  --forest-foreground: oklch(0.97 0.015 80);
+  --clay: oklch(0.65 0.13 45);
+  --destructive: oklch(0.65 0.22 27);
+  --destructive-foreground: oklch(0.97 0.015 80);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.68 0.18 38);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html { -webkit-font-smoothing: antialiased; }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+  h1, h2, h3, h4, .font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
+}
+
+@layer utilities {
+  .text-gradient-warm {
+    background: linear-gradient(100deg, var(--primary), var(--saffron) 60%, var(--clay));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .bg-warm-grain {
+    background-image:
+      radial-gradient(circle at 20% 10%, color-mix(in oklab, var(--saffron) 18%, transparent), transparent 50%),
+      radial-gradient(circle at 80% 80%, color-mix(in oklab, var(--primary) 14%, transparent), transparent 55%),
+      var(--background);
+  }
+  .ankara-stripe {
+    background-image: repeating-linear-gradient(
+      90deg,
+      var(--primary) 0 32px,
+      var(--saffron) 32px 64px,
+      var(--forest) 64px 96px,
+      var(--foreground) 96px 100px
+    );
+  }
+}
