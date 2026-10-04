@@ -17,10 +17,17 @@ repository's **Releases** page.
 ```bash
 npm i --no-save @capacitor/cli @capacitor/core @capacitor/android
 npx cap add android
+npx --yes @capacitor/assets@3 generate --android --iconBackgroundColor '#ffffff' --splashBackgroundColor '#ffffff'
 npx cap sync android
 cd android && ./gradlew assembleDebug
 # APK: android/app/build/outputs/apk/debug/app-debug.apk
 ```
+
+## App icon and splash screen
+
+The launcher icon and splash screen are generated from the KF logo in
+`assets/` (`icon-only.png`, `icon-foreground.png`, `icon-background.png`,
+`splash.png`, `splash-dark.png`). Replace those files to change them.
 
 ## Publishing it in the app
 
