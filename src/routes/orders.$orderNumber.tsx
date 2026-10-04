@@ -258,7 +258,7 @@ function LiveRiderMap({
       <GoogleMap
         center={riderLoc || markers[0]}
         markers={markers}
-        drawLineBetween
+        drawLineBetween={false}
         routePolyline={route?.polyline ?? null}
         mapType="hybrid"
         followFirstMarker={!!riderLoc}

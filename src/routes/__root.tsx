@@ -4,6 +4,8 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
+
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -42,7 +44,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -120,6 +122,8 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isHome = pathname === "/";
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
@@ -138,8 +142,8 @@ function RootComponent() {
           <Outlet />
         </main>
         <Footer />
-        <GlobalChat />
-        <SupportButton />
+        {isHome && <GlobalChat />}
+        {isHome && <SupportButton />}
         <AdsPopup />
         <DeliveredPopup />
       </div>
@@ -147,3 +151,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+

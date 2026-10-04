@@ -1,17 +1,31 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, LogOut, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 import { CopyButton } from "@/components/CopyButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { formatXAF } from "@/lib/format";
 import { ProfileEditor } from "@/components/ProfileEditor";
 import { AdminRequestDialog } from "@/components/AdminRequestDialog";
+import { AccountHub } from "@/components/account/AccountHub";
+import { fetchVerification, type Verification } from "@/lib/shop";
 
 export const Route = createFileRoute("/account")({
-  head: () => ({ meta: [{ title: "Your account — St Kingston" }] }),
+  head: () => ({
+    meta: [
+      { title: "Your account — KINGS FOOD" },
+      { name: "description", content: "Manage your KINGS FOOD profile, favorites, delivery addresses, vouchers, payments, refunds and notifications." },
+      { property: "og:title", content: "Your KINGS FOOD account" },
+      { property: "og:description", content: "Orders, favorites, vouchers, refunds and account verification in one place." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: AccountPage,
 });
+
 
 function AccountPage() {
   const navigate = useNavigate();
@@ -19,10 +33,17 @@ function AccountPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdminReq, setShowAdminReq] = useState(false);
+  const [verification, setVerification] = useState<Verification | null>(null);
+
+  useEffect(() => {
+    if (!user) { setVerification(null); return; }
+    fetchVerification(user.id).then(setVerification).catch(() => {});
+  }, [user]);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) { setLoading(false); return; }
+
     (async () => {
       setLoading(true);
       const { data: o } = await supabase
@@ -68,7 +89,15 @@ function AccountPage() {
           <h1 className="mt-1 font-display text-3xl font-bold md:text-4xl">Hello{user.email ? `, ${user.email.split("@")[0]}` : ""}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => setShowAdminReq(true)} className="inline-flex items-center gap-2 rounded-full border border-input bg-card px-4 py-2 text-sm font-semibold hover:bg-muted">
+          <button
+            onClick={() => {
+              if (verification?.status !== "approved") {
+                return toast.error("Verify your account first — open “Verify account” below.");
+              }
+              setShowAdminReq(true);
+            }}
+            className="inline-flex items-center gap-2 rounded-full border border-input bg-card px-4 py-2 text-sm font-semibold hover:bg-muted"
+          >
             <ShieldCheck className="h-4 w-4 text-primary" /> Request admin badge
           </button>
           <button onClick={onSignOut} className="inline-flex items-center gap-2 rounded-full border border-input bg-card px-4 py-2 text-sm font-semibold hover:bg-muted">
@@ -76,6 +105,10 @@ function AccountPage() {
           </button>
         </div>
       </div>
+
+      <AccountHub user={user} verification={verification} onVerificationChange={setVerification} />
+
+
 
       <section className="mt-8"><ProfileEditor /></section>
 

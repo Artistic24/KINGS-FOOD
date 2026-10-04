@@ -157,6 +157,12 @@ function AvailableList({ orders, rider }: { orders: any[]; rider: any }) {
                   <p className="flex items-center gap-1 font-display font-bold">{o.order_number}<CopyButton value={o.order_number} /></p>
                   <p className="text-xs text-muted-foreground">{o.customer_name} · {o.customer_phone}</p>
                   <p className="mt-1 text-sm">{o.street ? `${o.street}, ` : ""}{o.city}, {o.region}</p>
+                  {buyerPin(o) && (
+                    <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                      📍 {buyerPin(o)!.lat.toFixed(5)}, {buyerPin(o)!.lng.toFixed(5)}
+                      <CopyButton value={`${buyerPin(o)!.lat}, ${buyerPin(o)!.lng}`} />
+                    </p>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-primary">{formatXAF(o.total_xaf)}</p>
@@ -328,7 +334,7 @@ function ActiveDelivery({ order, rider, onDone }: { order: any; rider: any; onDo
   const dest = destPin ? { lat: destPin.lat, lng: destPin.lng } : null;
   const metersToBuyer = myLoc && dest ? metersBetween(myLoc, dest) : null;
   // Delivered can only be confirmed on the doorstep (≤3 m) or once "Arrived" was tapped.
-  const canDeliver = order.delivery_status === "arrived" || (metersToBuyer != null && metersToBuyer <= 3);
+  const canDeliver = metersToBuyer != null && metersToBuyer <= 3;
 
   useEffect(() => { setVoiceEnabled(voiceOn); }, [voiceOn]);
   useEffect(() => () => stopRinging(), []);
@@ -357,6 +363,12 @@ function ActiveDelivery({ order, rider, onDone }: { order: any; rider: any; onDo
             <p className="text-xs font-medium uppercase tracking-widest text-primary">Active delivery</p>
             <p className="mt-1 flex items-center gap-1 font-display text-xl font-bold">{order.order_number}<CopyButton value={order.order_number} /></p>
             <p className="text-sm">{order.customer_name}</p>
+            {destPin && (
+              <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                📍 {destPin.lat.toFixed(5)}, {destPin.lng.toFixed(5)}
+                <CopyButton value={`${destPin.lat}, ${destPin.lng}`} />
+              </p>
+            )}
             <a href={`tel:${order.customer_phone}`} className="mt-1 inline-flex items-center gap-1 text-xs text-primary underline"><Phone className="h-3 w-3" />{order.customer_phone}</a>
           </div>
           <div className="flex flex-col items-end gap-2">
@@ -396,7 +408,7 @@ function ActiveDelivery({ order, rider, onDone }: { order: any; rider: any; onDo
         <GoogleMap
           center={myLoc || dest}
           markers={markers}
-          drawLineBetween
+          drawLineBetween={false}
           routePolyline={route?.polyline ?? null}
           mapType="hybrid"
           height={360}
@@ -421,7 +433,7 @@ function ActiveDelivery({ order, rider, onDone }: { order: any; rider: any; onDo
           <button
             onClick={markDelivered}
             disabled={!canDeliver}
-            title={canDeliver ? "Confirm delivery" : "Available within 3 m of the buyer, or after tapping Arrived"}
+            title={canDeliver ? "Confirm delivery" : "Available within 3 m of the buyer"}
             className="rounded-full bg-forest px-4 py-2.5 text-sm font-semibold text-forest-foreground disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-2"
           >
             <CheckCircle2 className="mr-1 inline h-4 w-4" />

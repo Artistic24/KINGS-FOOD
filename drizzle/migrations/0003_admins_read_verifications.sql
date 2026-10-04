@@ -1,0 +1,1 @@
+CREATE POLICY "admins read verifications" ON public.account_verifications FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'));

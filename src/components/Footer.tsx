@@ -14,7 +14,7 @@ export function Footer() {
         <div>
           <div className="flex items-center gap-2">
             {brand.logo_url ? (
-              <img src={brand.logo_url} alt={brand.brand_name} className="h-10 w-10 rounded-xl object-cover" />
+              <img src={brand.logo_url} alt={brand.brand_name} className="h-12 w-12 rounded-xl object-contain" />
             ) : (
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground font-display text-lg font-bold">
                 {brandInitials(brand.brand_name)}

@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -87,8 +87,25 @@ function CheckoutPage() {
   const [nearestAdmin, setNearestAdmin] = useState<NearestAdmin | null>(null);
   const [checkingAdmin, setCheckingAdmin] = useState(false);
   const [adminCheckMsg, setAdminCheckMsg] = useState<string | null>(null);
+  const pinReqRef = useRef(0);
+  const [usingSaved, setUsingSaved] = useState(false);
+
+  // Saved delivery addresses (profile → Delivery address) for one-tap checkout.
+  const { data: savedAddresses = [] } = useQuery({
+    queryKey: ["my-addresses", user?.id],
+    enabled: !!user?.id,
+    queryFn: async (): Promise<any[]> => {
+      const { data } = await supabase
+        .from("addresses" as any)
+        .select("*")
+        .order("is_default", { ascending: false })
+        .order("created_at", { ascending: false });
+      return (data as any) ?? [];
+    },
+  });
 
   const geo = useGeolocation(true);
+
 
   useEffect(() => {
     if (geo.coords && lat == null && lng == null) {
@@ -286,6 +303,47 @@ function CheckoutPage() {
 
           <section className="rounded-2xl border border-border bg-card p-5">
             <h2 className="font-display text-lg font-bold">Delivery address</h2>
+            {savedAddresses.length > 0 && (
+              <div className="mt-3">
+                <label className="block text-sm font-medium">Use a saved address</label>
+                <select
+                  className={inputCls}
+                  defaultValue=""
+                  onChange={(e) => {
+                    const a = savedAddresses.find((x: any) => x.id === e.target.value);
+                    if (!a) return;
+                    setForm((f) => ({
+                      ...f,
+                      region: a.region ?? f.region,
+                      city: a.city ?? f.city,
+                      street: a.street ?? "",
+                      landmark: a.landmark ?? "",
+                      customer_name: a.full_name || f.customer_name,
+                      customer_phone: a.phone || f.customer_phone,
+                    }));
+                    if (a.latitude != null && a.longitude != null) {
+                      pinReqRef.current++; // supersede any pending GPS request
+                      setLat(Number(a.latitude));
+                      setLng(Number(a.longitude));
+                    }
+                    setUsingSaved(a.latitude != null && a.longitude != null);
+                    toast.success(`Using "${a.label ?? "saved address"}"`);
+                  }}
+                >
+                  <option value="">Choose a saved delivery address…</option>
+                  {savedAddresses.map((a: any) => (
+                    <option key={a.id} value={a.id}>
+                      {a.label ?? "Address"} — {[a.street, a.city, a.region].filter(Boolean).join(", ")}
+                      {a.latitude != null ? " 📍" : ""}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Manage these in your profile → Delivery address.
+                </p>
+              </div>
+            )}
+
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               <Field label="Region" required>
                 <select className={inputCls} value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} required>
@@ -306,19 +364,27 @@ function CheckoutPage() {
               </Field>
             </div>
             <div className="mt-5">
+              {usingSaved ? (
+                <div className="rounded-xl bg-forest/10 px-3 py-2 text-xs text-forest">
+                  ✅ Using your saved delivery address pin{lat != null && lng != null ? ` — 📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}` : ""}.{" "}
+                  <button type="button" className="font-semibold underline" onClick={() => setUsingSaved(false)}>Drop a different pin</button>
+                </div>
+              ) : (
+              <>
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <label className="block text-sm font-medium">Drop your delivery pin <span className="text-destructive">*</span></label>
                 <button
                   type="button"
                   onClick={() => {
-                    // Use the live fix immediately if we have it
+                    // Every click supersedes the previous one: only the newest
+                    // request may set a pin, so no stale pins are ever kept.
+                    const reqId = ++pinReqRef.current;
                     if (geo.coords) {
                       setLat(geo.coords.lat);
                       setLng(geo.coords.lng);
                       toast.success("Pin moved to your current location");
                       return;
                     }
-                    // Otherwise request a one-shot fix from within this user gesture
                     if (typeof navigator === "undefined" || !navigator.geolocation) {
                       toast.error("Geolocation is not supported on this device");
                       return;
@@ -326,11 +392,13 @@ function CheckoutPage() {
                     const tid = toast.loading("Getting your location…");
                     navigator.geolocation.getCurrentPosition(
                       (pos) => {
+                        if (reqId !== pinReqRef.current) return toast.dismiss(tid);
                         setLat(pos.coords.latitude);
                         setLng(pos.coords.longitude);
                         toast.success("Pin moved to your current location", { id: tid });
                       },
                       (err) => {
+                        if (reqId !== pinReqRef.current) return toast.dismiss(tid);
                         toast.error(
                           err.code === err.PERMISSION_DENIED
                             ? "Location permission denied. Enable it in your browser settings."
@@ -341,6 +409,7 @@ function CheckoutPage() {
                       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
                     );
                   }}
+
                   className="inline-flex items-center gap-1.5 rounded-full border border-input bg-background px-3 py-1.5 text-xs font-semibold hover:bg-muted"
                 >
                   <MapPin className="h-3.5 w-3.5" /> Use my current location
@@ -358,6 +427,8 @@ function CheckoutPage() {
               <MapPicker lat={lat} lng={lng} onChange={(la, ln) => { setLat(la); setLng(ln); }} />
               {lat != null && lng != null && (
                 <p className="mt-2 text-xs text-muted-foreground">📍 Delivery pin: {lat.toFixed(5)}, {lng.toFixed(5)}</p>
+              )}
+              </>
               )}
               {/* Coverage / nearest-admin geofence status */}
               {(form.region && form.city && lat != null && lng != null) && (

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { sampleFace, blendSample, type FaceSample } from "@/lib/face-liveness";
+import { fetchVerification, type Verification } from "@/lib/shop";
 
 export const Route = createFileRoute("/rider/apply")({
   head: () => ({ meta: [{ title: "Become a rider — St Kingston" }, { name: "robots", content: "noindex" }] }),
@@ -29,6 +30,8 @@ function RiderApplyPage() {
   const [idBack, setIdBack] = useState<Blob | null>(null);
   const [faceVideo, setFaceVideo] = useState<Blob | null>(null);
   const [status, setStatus] = useState<"none" | "pending" | "approved" | "declined">("none");
+  const [verification, setVerification] = useState<Verification | null>(null);
+
   const [submitting, setSubmitting] = useState(false);
 
   const idMeta = ID_TYPES.find((t) => t.value === idType)!;
@@ -60,12 +63,29 @@ function RiderApplyPage() {
       .then(({ data }: any) => data && setStatus(data.status));
   }, [user]);
 
+  useEffect(() => {
+    if (!user) { setVerification(null); return; }
+    fetchVerification(user.id).then(setVerification).catch(() => {});
+  }, [user]);
+
   if (authLoading) return <div className="grid min-h-[50vh] place-items-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (!user) {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
         <h1 className="font-display text-2xl font-bold">Sign in to apply</h1>
         <Link to="/auth" className="mt-4 inline-block rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground">Sign in</Link>
+      </div>
+    );
+  }
+
+  if (verification?.status !== "approved") {
+    return (
+      <div className="mx-auto max-w-md px-4 py-16 text-center">
+        <h1 className="font-display text-2xl font-bold">Verify your account first</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Rider applications require a verified account. Open your profile and complete “Verify account”.
+        </p>
+        <Link to="/account" className="mt-6 inline-block rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground">Go to profile</Link>
       </div>
     );
   }
@@ -96,6 +116,17 @@ function RiderApplyPage() {
         <CheckCircle2 className="mx-auto h-10 w-10 text-forest" />
         <h1 className="mt-4 font-display text-2xl font-bold">You're a rider!</h1>
         <Link to="/rider" className="mt-4 inline-block rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground">Open rider dashboard</Link>
+        <button
+          onClick={async () => {
+            if (!confirm("Changing your details pauses your rider access until an admin approves the new application. Continue?")) return;
+            const { error } = await (supabase as any).rpc("rider_request_detail_change");
+            if (error) return toast.error(error.message);
+            setStatus("none");
+          }}
+          className="mt-3 block w-full text-sm text-muted-foreground underline"
+        >
+          Edit my rider details (needs reapproval)
+        </button>
       </div>
     );
   }

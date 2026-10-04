@@ -88,7 +88,7 @@ export function GlobalChat() {
 
     async function hydrate(rows: Msg[], replace: boolean) {
       const ids = Array.from(new Set(rows.map((r) => r.user_id)));
-      const { data: profs } = await supabase.from("profiles").select("id, full_name, avatar_url").in("id", ids);
+      const { data: profs } = await supabase.rpc("public_profiles", { _ids: ids });
       const map = new Map((profs || []).map((p: any) => [p.id, p]));
       const out = rows.map((r) => {
         const bot = typeof r.content === "string" && r.content.startsWith(BOT_MARK);

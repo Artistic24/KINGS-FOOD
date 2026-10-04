@@ -129,6 +129,20 @@ export function RiderMapsPanel({ onClose, riderId }: { onClose: () => void; ride
   }, []);
 
   const search = async () => {
+    // Allow pasting a raw location pin ("4.49895, 11.617303") straight into the box.
+    const coord = q.trim().match(/^(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)$/);
+    if (coord) {
+      const la = parseFloat(coord[1]);
+      const ln = parseFloat(coord[2]);
+      setRoute(null);
+      setFound({
+        id: `pin:${la},${ln}`, order_number: "Pin", customer_name: "Dropped pin", customer_phone: null,
+        street: null, city: null, region: null, landmark: null,
+        latitude: la, longitude: ln, origin_latitude: null, origin_longitude: null, origin_accuracy_m: null,
+      });
+      toast.success("Navigating to pin");
+      return;
+    }
     const code = normaliseCode(q);
     if (!code) return toast.error("Enter an order number, e.g. KF-6TU1");
     setSearching(true);
@@ -184,6 +198,23 @@ export function RiderMapsPanel({ onClose, riderId }: { onClose: () => void; ride
   const destPin = buyerPin(found);
   const dest = destPin ? { lat: destPin.lat, lng: destPin.lng } : null;
   const straightMeters = myLoc && dest ? metersBetween(myLoc, dest) : null;
+  const canDeliver = straightMeters != null && straightMeters <= 3;
+  const [delivering, setDelivering] = useState(false);
+  const deliverNow = async () => {
+    if (!found || !canDeliver) return;
+    setDelivering(true);
+    stopRinging();
+    const { error } = await (supabase as any)
+      .from("orders")
+      .update({ delivery_status: "delivered", status: "delivered", delivered_at: new Date().toISOString() })
+      .eq("id", found.id);
+    setDelivering(false);
+    if (error) return toast.error(error.message);
+    await (supabase as any).from("rider_locations").delete().eq("order_id", found.id);
+    toast.success(`${found.order_number} delivered`);
+    setFound(null);
+    setRoute(null);
+  };
 
   const markers: any[] = [];
   if (myLoc && !navMode) markers.push({ ...myLoc, color: "blue", label: "You", title: "Your position" });
@@ -244,7 +275,7 @@ export function RiderMapsPanel({ onClose, riderId }: { onClose: () => void; ride
           center={center}
           zoom={navMode ? 18 : 15}
           markers={markers}
-          drawLineBetween
+          drawLineBetween={false}
           routePolyline={route?.polyline ?? null}
           mapType="hybrid"
           height="100%"
@@ -275,6 +306,17 @@ export function RiderMapsPanel({ onClose, riderId }: { onClose: () => void; ride
         >
           <Compass className={`h-5 w-5 ${navMode ? "text-primary" : "text-muted-foreground"}`} />
         </button>
+
+        {/* Floating Deliver button — enabled only when the rider is on the buyer's pin */}
+        {dest && found && (
+          <button
+            disabled={!canDeliver || delivering}
+            onClick={deliverNow}
+            className="absolute bottom-24 left-3 rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-lg disabled:opacity-50"
+          >
+            {delivering ? "Saving…" : canDeliver ? "Deliver" : "Deliver (arrive first)"}
+          </button>
+        )}
 
         {/* ETA / distance bar */}
         {dest && (

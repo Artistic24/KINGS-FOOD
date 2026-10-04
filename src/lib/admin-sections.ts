@@ -12,10 +12,15 @@ export const ADMIN_SECTIONS = [
   { key: "requests", label: "Admin requests" },
   { key: "riders", label: "Rider requests" },
   { key: "leaderboard", label: "Rider leaderboard" },
+  { key: "refunds", label: "Refunds" },
+  { key: "verify", label: "Verification" },
+  { key: "vouchers", label: "Vouchers" },
+  { key: "notifications", label: "Notifications" },
   { key: "brand", label: "Brand" },
   { key: "ads", label: "Ads" },
   { key: "exports", label: "Exports" },
   { key: "code", label: "Source code" },
+  { key: "media", label: "Media" },
 ] as const;
 
 export type AdminSectionKey = (typeof ADMIN_SECTIONS)[number]["key"];

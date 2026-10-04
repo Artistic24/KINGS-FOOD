@@ -33,12 +33,15 @@ export function Header() {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 md:px-6">
         <Link to="/" className="flex items-center gap-2">
           {brand.logo_url ? (
-            <img src={brand.logo_url} alt={brand.brand_name} className="h-10 w-10 rounded-xl object-cover" />
+            <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl md:h-16 md:w-16">
+              <img src={brand.logo_url} alt={brand.brand_name} className="h-full w-full object-contain" />
+            </span>
           ) : (
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground font-display text-lg font-bold">
+            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground font-display text-2xl font-bold md:h-16 md:w-16">
               {brandInitials(brand.brand_name)}
             </span>
           )}
+
           <span className="font-display text-lg font-bold leading-tight md:text-xl">
             {brand.brand_name}
             <span className="block text-[10px] font-sans font-normal uppercase tracking-widest text-muted-foreground">

@@ -30,14 +30,23 @@ import {
   KeyRound,
   FolderArchive,
   Home as HomeIcon,
+  Images,
+  Image as ImageIcon,
 } from "lucide-react";
 import { BrandTab } from "@/components/admin/BrandTab";
 import { AdsTab } from "@/components/admin/AdsTab";
 import { ExportsTab } from "@/components/admin/ExportsTab";
 import { CodeExportTab } from "@/components/admin/CodeExportTab";
 import { RolesTab } from "@/components/admin/RolesTab";
+import { RefundsTab } from "@/components/admin/RefundsTab";
+import { VouchersTab } from "@/components/admin/VouchersTab";
+import { NotificationsTab } from "@/components/admin/NotificationsTab";
 import { HomeTab } from "@/components/admin/HomeTab";
+import { SlidesTab } from "@/components/admin/SlidesTab";
+import { ProductImagesEditor } from "@/components/admin/ProductImagesEditor";
 import { RiderLeaderboardTab } from "@/components/admin/RiderLeaderboardTab";
+import { MediaTab } from "@/components/admin/MediaTab";
+import { VerificationsTab } from "@/components/admin/VerificationsTab";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -46,11 +55,55 @@ import { RevenuePanel } from "@/components/admin/RevenuePanel";
 import { CopyButton } from "@/components/CopyButton";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — St Kingston" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Admin — KINGS FOOD" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type TabKey = "dashboard" | "home" | "products" | "orders" | "sectors" | "zones" | "users" | "admins" | "payments" | "support" | "requests" | "riders" | "leaderboard" | "brand" | "ads" | "exports" | "code" | "roles";
+type TabKey = "dashboard" | "home" | "products" | "orders" | "sectors" | "zones" | "users" | "admins" | "payments" | "support" | "requests" | "riders" | "leaderboard" | "brand" | "ads" | "slides" | "exports" | "code" | "roles" | "refunds" | "verify" | "vouchers" | "notifications" | "media";
+
+// Sections that show a red dot when something new arrives since the admin last opened them.
+const DOT_TABLES: Partial<Record<TabKey, string>> = {
+  orders: "orders",
+  requests: "admin_requests",
+  riders: "rider_requests",
+  refunds: "refund_requests",
+  verify: "account_verifications",
+};
+
+function useTabDots(userId: string | undefined) {
+  const storageKey = `admin-tab-seen:${userId ?? "anon"}`;
+  const [seen, setSeen] = useState<Record<string, number>>(() => {
+    try { return JSON.parse(localStorage.getItem(storageKey) || "{}"); } catch { return {}; }
+  });
+  const { data: latest } = useQuery({
+    queryKey: ["admin-tab-dots"],
+    refetchInterval: 30_000,
+    queryFn: async () => {
+      const out: Record<string, number> = {};
+      await Promise.all(
+        Object.entries(DOT_TABLES).map(async ([tab, table]) => {
+          const { data } = await (supabase as any).from(table).select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle();
+          if (data?.created_at) out[tab] = new Date(data.created_at).getTime();
+        }),
+      );
+      const { data: media } = await (supabase as any).rpc("admin_list_media", { _limit: 1 });
+      if (media?.[0]?.created_at) out.media = new Date(media[0].created_at).getTime();
+      return out;
+    },
+  });
+  const markSeen = (tab: TabKey) => {
+    setSeen((prev) => {
+      const next = { ...prev, [tab]: Date.now() };
+      try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
+  const hasDot = (tab: TabKey) => {
+    const ts = latest?.[tab];
+    return typeof ts === "number" && ts > (seen[tab] ?? 0);
+  };
+  return { hasDot, markSeen };
+}
 
 function AdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -59,6 +112,7 @@ function AdminPage() {
   const [deniedSections, setDeniedSections] = useState<Set<string>>(new Set());
   const [checking, setChecking] = useState(true);
   const [tab, setTab] = useState<TabKey>("dashboard");
+  const { hasDot, markSeen } = useTabDots(user?.id);
 
 
   useEffect(() => {
@@ -107,10 +161,16 @@ function AdminPage() {
     { key: "requests", label: "Admin requests", icon: Inbox },
     { key: "riders", label: "Rider requests", icon: Bike },
     { key: "leaderboard", label: "Rider leaderboard", icon: Bike },
+    { key: "refunds", label: "Refunds", icon: Inbox },
+    { key: "verify", label: "Verification", icon: Check },
+    { key: "vouchers", label: "Vouchers", icon: Wallet },
+    { key: "notifications", label: "Notifications", icon: Megaphone },
     { key: "brand", label: "Brand", icon: Palette },
     { key: "ads", label: "Ads", icon: Megaphone },
+    { key: "slides", label: "Home adverts", icon: Images },
     { key: "exports", label: "Exports", icon: Download },
     { key: "code", label: "Source code", icon: FolderArchive },
+    { key: "media", label: "Media", icon: ImageIcon },
     ...(isSuper ? [{ key: "roles" as TabKey, label: "Roles", icon: KeyRound }] : []),
   ];
 
@@ -124,7 +184,7 @@ function AdminPage() {
         <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground"><ShieldCheck className="h-5 w-5" /></span>
         <div>
           <h1 className="font-display text-2xl font-bold md:text-3xl">Control center</h1>
-          <p className="text-xs text-muted-foreground">St Kingston operations dashboard</p>
+          <p className="text-xs text-muted-foreground">KINGS FOOD operations dashboard</p>
         </div>
       </div>
 
@@ -132,11 +192,12 @@ function AdminPage() {
         {tabs.map((t) => (
           <button
             key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${active === t.key ? "bg-primary text-primary-foreground" : "text-foreground/70 hover:bg-muted"}`}
+            onClick={() => { setTab(t.key); markSeen(t.key); }}
+            className={`relative flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${active === t.key ? "bg-primary text-primary-foreground" : "text-foreground/70 hover:bg-muted"}`}
           >
             <t.icon className="h-4 w-4" />
             {t.label}
+            {hasDot(t.key) && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />}
           </button>
         ))}
       </div>
@@ -154,10 +215,16 @@ function AdminPage() {
       {active === "requests" && <AdminRequestsTab />}
       {active === "riders" && <RiderRequestsTab />}
       {active === "leaderboard" && <RiderLeaderboardTab />}
+      {active === "refunds" && <RefundsTab />}
+      {active === "vouchers" && <VouchersTab />}
+      {active === "notifications" && <NotificationsTab />}
       {active === "brand" && <BrandTab />}
       {active === "ads" && <AdsTab />}
+      {active === "slides" && <SlidesTab />}
       {active === "exports" && <ExportsTab />}
       {active === "code" && <CodeExportTab />}
+      {active === "media" && <MediaTab />}
+      {active === "verify" && <VerificationsTab />}
       {active === "roles" && isSuper && <RolesTab />}
 
     </div>
@@ -452,6 +519,7 @@ function ProductEditor({ product, sectors, onClose, onSaved }: any) {
               </div>
             </div>
           </Field>
+          {product && <ProductImagesEditor productId={product.id} mainImage={form.image_url} />}
           <Field label="Unit (e.g. kg, pcs)"><input className={inp} value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} /></Field>
           <div className="flex gap-4">
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} />Featured</label>
@@ -477,8 +545,19 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 // ============ ORDERS ============
 function OrdersTab() {
   const qc = useQueryClient();
+  const { user } = useAuth();
   const [filter, setFilter] = useState<string>("all");
+  const [region, setRegion] = useState<string>("all");
   const [q, setQ] = useState("");
+  const { data: superRow } = useQuery({
+    queryKey: ["am-i-super", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("admin_locations").select("is_super_admin").eq("user_id", user!.id).maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+  const isSuper = !!superRow?.is_super_admin;
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["admin-orders"],
     queryFn: async () => {
@@ -499,6 +578,7 @@ function OrdersTab() {
     const t = q.trim().toLowerCase();
     return orders.filter((o: any) => {
       if (filter !== "all" && o.status !== filter) return false;
+      if (isSuper && region !== "all" && (o.region || "") !== region) return false;
       if (!t) return true;
       return (
         (o.order_number || "").toLowerCase().includes(t) ||
@@ -507,7 +587,7 @@ function OrdersTab() {
         (o.status || "").toLowerCase().includes(t)
       );
     });
-  }, [orders, filter, q]);
+  }, [orders, filter, q, region, isSuper]);
 
   return (
     <div>
@@ -516,10 +596,21 @@ function OrdersTab() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by order # (SK-…), name, phone, or status"
+          placeholder="Search by order # (KF-…), name, phone, or status"
           className="w-full rounded-full border border-input bg-card pl-10 pr-4 py-2.5 text-sm"
         />
       </div>
+      {isSuper && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Region</span>
+          <select value={region} onChange={(e) => setRegion(e.target.value)} className="rounded-full border border-input bg-card px-3 py-1.5 text-xs">
+            <option value="all">All regions (super admin)</option>
+            {Array.from(new Set(orders.map((o: any) => o.region).filter(Boolean))).sort().map((r: any) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="mb-4 flex flex-wrap gap-2">
         {["all", ...statuses].map((s) => (
           <button key={s} onClick={() => setFilter(s)} className={`rounded-full px-3 py-1.5 text-xs font-medium ${filter === s ? "bg-primary text-primary-foreground" : "bg-muted text-foreground/70 hover:bg-muted/70"}`}>{s}</button>
@@ -534,6 +625,7 @@ function OrdersTab() {
                   <p className="flex items-center gap-1 font-display font-bold">{o.order_number}<CopyButton value={o.order_number} /> <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] uppercase ${o.status === "delivered" ? "bg-forest/15 text-forest" : "bg-muted text-foreground/70"}`}>{o.status}</span></p>
                   <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.customer_name} · {o.customer_phone}</p>
                   <p className="text-xs text-muted-foreground">{o.region}, {o.city} · {o.payment_method} · {o.payment_status}</p>
+                  <p className="text-xs"><span className="rounded-full bg-muted px-2 py-0.5 text-[10px] uppercase tracking-wider">live: {o.delivery_status || "unassigned"}</span></p>
                 </div>
                 <div className="text-right">
                   <p className="font-display text-lg font-bold">{formatXAF(o.total_xaf)}</p>

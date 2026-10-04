@@ -1,0 +1,1 @@
+ALTER TABLE public.addresses ADD COLUMN IF NOT EXISTS full_name text;

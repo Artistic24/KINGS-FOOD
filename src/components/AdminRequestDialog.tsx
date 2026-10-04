@@ -80,7 +80,7 @@ export function AdminRequestDialog({ onClose }: { onClose: () => void }) {
         </div>
 
         {existing === "pending" && <p className="mt-3 rounded-lg bg-saffron/20 px-3 py-2 text-sm">⏳ Your previous request is still pending.</p>}
-        {existing === "approved" && <p className="mt-3 rounded-lg bg-emerald-500/20 px-3 py-2 text-sm">✅ You are already an admin.</p>}
+        {existing === "approved" && <p className="mt-3 rounded-lg bg-emerald-500/20 px-3 py-2 text-sm">✅ You are an admin. Submitting this form again sends your updated details to a super admin; your current details stay active until approved.</p>}
 
         <form onSubmit={submit} className="mt-4 space-y-3">
           <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full name" required className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />

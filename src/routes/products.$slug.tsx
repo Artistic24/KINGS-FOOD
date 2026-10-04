@@ -1,11 +1,16 @@
 import { createFileRoute, notFound, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { Minus, Plus, ShoppingBag } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Minus, Plus, ShoppingBag, Star } from "lucide-react";
 import { toast } from "sonner";
 import { fetchProductBySlug } from "@/lib/queries";
 import { formatXAF } from "@/lib/format";
 import { useCart } from "@/lib/cart";
 import { productImage } from "@/lib/product-images";
+import { ProductGallery } from "@/components/ProductGallery";
+import { ProductReviews } from "@/components/ProductReviews";
+import { useAuth } from "@/hooks/use-auth";
+import { fetchFavoriteIds, toggleFavorite } from "@/lib/shop";
+
 
 
 export const Route = createFileRoute("/products/$slug")({
@@ -31,7 +36,7 @@ export const Route = createFileRoute("/products/$slug")({
   errorComponent: ({ error }) => (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center">
       <h1 className="font-display text-2xl font-bold">Couldn't load this product</h1>
-      <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{error instanceof Error ? error.message : String(error)}</p>
     </div>
   ),
   notFoundComponent: () => (
@@ -48,6 +53,26 @@ function ProductPage() {
   const [qty, setQty] = useState(1);
   const add = useCart((s) => s.add);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [fav, setFav] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setFav(false); return; }
+    fetchFavoriteIds(user.id).then((ids) => setFav(ids.includes(product.id))).catch(() => {});
+  }, [user, product.id]);
+
+  const onToggleFav = async () => {
+    if (!user) return toast.error("Sign in to save favorites");
+    const next = !fav;
+    setFav(next);
+    try {
+      await toggleFavorite(user.id, product.id, next);
+      toast.success(next ? "Added to favorites" : "Removed from favorites");
+    } catch (e: any) {
+      setFav(!next);
+      toast.error(e.message ?? "Could not update favorites");
+    }
+  };
 
   const onAdd = (goToCart = false) => {
     add(
@@ -65,19 +90,14 @@ function ProductPage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-12">
+    <div className="mx-auto max-w-6xl px-4 py-8 pb-24 md:px-6 md:py-12 md:pb-12">
       <div className="grid gap-8 md:grid-cols-2 md:gap-12">
-        <div className="overflow-hidden rounded-3xl border border-border bg-muted">
-          {img ? (
-            <img src={img} alt={product.name} className="h-full w-full object-cover" />
-          ) : (
-            <div className="grid aspect-square place-items-center text-7xl">🛍️</div>
-          )}
-        </div>
+        <ProductGallery productId={product.id} primary={img} alt={product.name} />
 
         <div className="flex flex-col">
           <h1 className="font-display text-3xl font-bold leading-tight md:text-5xl">{product.name}</h1>
           {product.unit && (
+
             <p className="mt-2 text-sm text-muted-foreground">per {product.unit}</p>
           )}
           <p className="mt-4 font-display text-3xl font-bold text-primary">
@@ -112,12 +132,22 @@ function ProductPage() {
               <ShoppingBag className="h-4 w-4" /> Add to cart
             </button>
           </div>
-          <button
-            onClick={() => onAdd(true)}
-            className="mt-3 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-primary/90"
-          >
-            Buy now — {formatXAF(product.price_xaf * qty)}
-          </button>
+          <div className="mt-3 hidden gap-3 md:flex">
+            <button
+              onClick={() => onAdd(true)}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-primary/90"
+            >
+              Buy now — {formatXAF(product.price_xaf * qty)}
+            </button>
+            <button
+              onClick={onToggleFav}
+              aria-label={fav ? "Remove from favorites" : "Add to favorites"}
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-input hover:bg-muted"
+            >
+              <Star className={`h-5 w-5 ${fav ? "fill-saffron text-saffron" : "text-muted-foreground"}`} />
+            </button>
+          </div>
+
 
           <div className="mt-8 rounded-2xl border border-border bg-card p-4 text-sm">
             <p>🚚 Delivered across Cameroon's 10 regions.</p>
@@ -125,6 +155,26 @@ function ProductPage() {
           </div>
         </div>
       </div>
+
+      <ProductReviews productId={product.id} />
+
+      {/* Mobile sticky action bar — favorite + order */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex items-center gap-3 border-t border-border bg-background/95 px-4 py-3 backdrop-blur md:hidden">
+        <button
+          onClick={onToggleFav}
+          aria-label={fav ? "Remove from favorites" : "Add to favorites"}
+          className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-border"
+        >
+          <Star className={`h-6 w-6 ${fav ? "fill-saffron text-saffron" : "text-muted-foreground"}`} />
+        </button>
+        <button
+          onClick={() => onAdd(true)}
+          className="flex-1 rounded-2xl bg-primary py-3 font-display font-bold text-primary-foreground"
+        >
+          Order — {formatXAF(product.price_xaf * qty)}
+        </button>
+      </div>
     </div>
   );
 }
+

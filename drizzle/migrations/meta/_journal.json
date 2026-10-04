@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790865636487,
+      "tag": "0000_rider_reapply",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790866550237,
+      "tag": "0001_tighten_profiles_riders_storage",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790937767322,
+      "tag": "0002_admin_media_library",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790989026931,
+      "tag": "0003_admins_read_verifications",
+      "breakpoints": true
+    }
+  ]
+}

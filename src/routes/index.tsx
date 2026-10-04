@@ -1,15 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, MapPin, Truck, Wallet } from "lucide-react";
+import { ArrowRight, MapPin, Truck, Wallet, Sparkles } from "lucide-react";
 import heroImg from "@/assets/hero-market.jpg";
-import { fetchSectors, fetchFeaturedProducts, fetchDeliveryZones } from "@/lib/queries";
+import { fetchSectors, fetchFeaturedProducts, fetchDeliveryZones, fetchAllProducts } from "@/lib/queries";
 import { SectorCard } from "@/components/SectorCard";
 import { ProductCard } from "@/components/ProductCard";
 import { ReviewsWall } from "@/components/ReviewsWall";
 import { ReviewSubmit } from "@/components/ReviewSubmit";
 import { ApkDownloadButton } from "@/components/ApkDownloadButton";
+import { HomeSlider } from "@/components/HomeSlider";
 import { formatXAF } from "@/lib/format";
 import { fetchHomeContent, HOME_DEFAULTS } from "@/lib/home-content";
+import { useAuth } from "@/hooks/use-auth";
+import { fetchFavoriteIds, fetchPreferences, fetchRatingIndex, PREF_DEFAULTS } from "@/lib/shop";
+import { recommendProducts } from "@/lib/recommendations";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,17 +31,45 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  const { user } = useAuth();
   const { data: sectors = [] } = useQuery({ queryKey: ["sectors"], queryFn: fetchSectors });
   const { data: featured = [] } = useQuery({ queryKey: ["featured"], queryFn: fetchFeaturedProducts });
   const { data: zones = [] } = useQuery({ queryKey: ["zones"], queryFn: fetchDeliveryZones });
   const { data: c = HOME_DEFAULTS } = useQuery({ queryKey: ["home-content"], queryFn: fetchHomeContent });
+  const { data: allProducts = [] } = useQuery({ queryKey: ["all-products"], queryFn: fetchAllProducts });
+  const { data: ratings = {} } = useQuery({ queryKey: ["rating-index"], queryFn: fetchRatingIndex, staleTime: 5 * 60 * 1000 });
+  const { data: favoriteIds = [] } = useQuery({
+    queryKey: ["favorites", user?.id],
+    queryFn: () => fetchFavoriteIds(user!.id),
+    enabled: !!user,
+  });
+  const { data: prefs = PREF_DEFAULTS } = useQuery({
+    queryKey: ["preferences", user?.id],
+    queryFn: () => fetchPreferences(user!.id),
+    enabled: !!user,
+  });
+
+  const recommended = allProducts.length
+    ? recommendProducts({
+        products: allProducts,
+        favoriteIds,
+        preferredSectors: prefs.sectors,
+        preferredKeywords: prefs.keywords,
+        ratings,
+        excludeIds: featured.map((f) => f.id),
+        limit: 8,
+      })
+    : [];
+
   const hero = c.heroImageUrl || heroImg;
 
   return (
     <div className="bg-warm-grain">
+      <HomeSlider />
       {/* HERO */}
       <section className="relative overflow-hidden">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 md:grid-cols-2 md:gap-12 md:px-6 md:py-20">
+
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 md:gap-8 md:px-6 md:py-12">
           <div className="flex flex-col justify-center">
             <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground/70">
               <span className="h-1.5 w-1.5 rounded-full bg-saffron" />
@@ -67,7 +100,7 @@ function HomePage() {
               <ApkDownloadButton />
             </div>
 
-            <div className="mt-10 grid grid-cols-3 gap-4">
+            <div className="mt-6 grid grid-cols-3 gap-4">
               {[
                 { icon: Truck, label: c.stat1 },
                 { icon: Wallet, label: c.stat2 },
@@ -83,35 +116,11 @@ function HomePage() {
             </div>
           </div>
 
-          <div className="relative">
-            <div className="absolute -left-6 -top-6 h-24 w-24 rounded-3xl bg-saffron/40 blur-2xl" />
-            <div className="absolute -bottom-6 -right-6 h-32 w-32 rounded-3xl bg-primary/30 blur-2xl" />
-            <div className="relative overflow-hidden rounded-3xl border border-border shadow-[var(--shadow-warm)]">
-              <img
-                src={hero}
-                alt={c.heroAlt}
-                width={1600}
-                height={1024}
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="absolute -bottom-4 left-6 right-6 rounded-2xl border border-border bg-card p-3 shadow-[var(--shadow-pop)] md:left-auto md:right-6 md:w-72">
-              <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-saffron text-saffron-foreground">
-                  🚚
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{c.deliveryNote}</p>
-                  <p className="font-display text-base font-bold">{formatXAF(1000)} — Centre</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
       {/* SECTORS */}
-      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
+      <section className="mx-auto max-w-7xl px-4 py-8 md:px-6">
         <div className="mb-8 flex items-end justify-between gap-4">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">{c.sectorsEyebrow}</p>
@@ -125,7 +134,7 @@ function HomePage() {
 
       {/* FEATURED PRODUCTS */}
       {featured.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 pb-16 md:px-6">
+        <section className="mx-auto max-w-7xl px-4 pb-8 md:px-6">
           <div className="mb-6 flex items-end justify-between gap-4">
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">{c.featuredEyebrow}</p>
@@ -138,8 +147,27 @@ function HomePage() {
         </section>
       )}
 
+      {/* RECOMMENDED FOR YOU */}
+      {recommended.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 pb-8 md:px-6">
+          <div className="mb-6">
+            <p className="flex items-center gap-2 text-sm font-medium uppercase tracking-[0.2em] text-forest">
+              <Sparkles className="h-4 w-4" /> Picked for you
+            </p>
+            <h2 className="mt-1 font-display text-3xl font-bold md:text-4xl">
+              {user ? "Based on your favorites & preferences" : "Trending with our shoppers"}
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {recommended.map((r) => <ProductCard key={r.product.id} p={r.product} />)}
+          </div>
+        </section>
+      )}
+
+
+
       {/* REGIONS BAND */}
-      <section className="mx-auto max-w-7xl px-4 pb-20 md:px-6">
+      <section className="mx-auto max-w-7xl px-4 pb-10 md:px-6">
         <div className="rounded-3xl border border-border bg-card p-6 md:p-10">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -168,7 +196,7 @@ function HomePage() {
       <ReviewsWall />
 
       {/* Submit your own review */}
-      <section className="mx-auto max-w-3xl px-4 pb-20 md:px-6">
+      <section className="mx-auto max-w-3xl px-4 pb-10 md:px-6">
         <ReviewSubmit />
       </section>
     </div>

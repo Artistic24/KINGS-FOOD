@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { formatXAF } from "@/lib/format";
 import type { Product } from "@/lib/queries";
 import { productImage } from "@/lib/product-images";
+import { fetchRatingIndex } from "@/lib/shop";
+import { StarRating } from "@/components/StarRating";
 import { useState } from "react";
 
 function fallbackFor(name: string) {
@@ -11,8 +14,14 @@ function fallbackFor(name: string) {
 
 export function ProductCard({ p }: { p: Product }) {
   const [src, setSrc] = useState(productImage(p.slug, p.image_url) || fallbackFor(p.name));
-
   const [errored, setErrored] = useState(false);
+  const { data: ratings = {} } = useQuery({
+    queryKey: ["rating-index"],
+    queryFn: fetchRatingIndex,
+    staleTime: 5 * 60 * 1000,
+  });
+  const rating = ratings[p.id];
+
   return (
     <Link
       to="/products/$slug"
@@ -37,8 +46,13 @@ export function ProductCard({ p }: { p: Product }) {
       </div>
       <div className="flex flex-1 flex-col gap-1 p-4">
         <h3 className="font-display text-base font-semibold leading-tight">{p.name}</h3>
-        {p.unit && (
-          <p className="text-xs text-muted-foreground">per {p.unit}</p>
+        {rating ? (
+          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+            <StarRating value={rating.avg} size={12} />
+            {rating.avg.toFixed(1)} ({rating.count})
+          </span>
+        ) : (
+          p.unit && <p className="text-xs text-muted-foreground">per {p.unit}</p>
         )}
         <p className="mt-auto pt-2 font-display text-lg font-bold text-primary">
           {formatXAF(p.price_xaf)}

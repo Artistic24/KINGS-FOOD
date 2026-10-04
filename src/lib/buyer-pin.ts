@@ -39,25 +39,17 @@ export function metersBetween(a: LatLng, b: LatLng) {
 /**
  * Single source of truth for where a rider must actually drive.
  *
- * The checkout stores TWO points:
- *  - `origin_*`  the device GPS fix captured automatically (trustworthy)
- *  - `latitude/longitude` the pin on the picker map (can be dragged/mis-tapped)
- *
- * A dragged pin is only a legitimate fine-tune when it sits close to the GPS
- * fix. A pin hundreds of metres away is almost always an accidental tap on a
- * zoomed-out map, and following it sends the rider to the wrong place — so the
- * device-verified GPS fix wins in that case.
+ * The pin the buyer set at checkout (saved delivery address or dropped pin,
+ * stored in `latitude/longitude`) is ALWAYS the destination, at full precision.
+ * The device GPS fix (`origin_*`) is only where the phone was when ordering —
+ * the buyer may order for home while at work — so it is used solely as a
+ * fallback when no valid checkout pin exists.
  */
 export function buyerPin(o: PinSource | null | undefined): (LatLng & { source: "pin" | "gps" }) | null {
   if (!o) return null;
   const pin = validPin(o.latitude, o.longitude);
-  const gps = validPin(o.origin_latitude, o.origin_longitude);
-  if (pin && gps) {
-    const drift = metersBetween(pin, gps);
-    const tolerance = Math.max(250, Math.min(num(o.origin_accuracy_m) ?? 0, 500));
-    return drift <= tolerance ? { ...pin, source: "pin" } : { ...gps, source: "gps" };
-  }
-  if (gps) return { ...gps, source: "gps" };
   if (pin) return { ...pin, source: "pin" };
+  const gps = validPin(o.origin_latitude, o.origin_longitude);
+  if (gps) return { ...gps, source: "gps" };
   return null;
 }

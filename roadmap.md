@@ -1,0 +1,7 @@
+- [x] Finish pending Refunds, Vouchers, Notifications admin tabs
+- [x] Add rider removal with reapply requirement
+- [x] Add rider/admin detail edits requiring reapproval
+- [x] Add arrival-only Deliver map button
+- [x] Add advert hold-to-pause and previous/next controls
+- [x] Tighten homepage vertical spacing
+- [x] Diagnose and fix routing detours

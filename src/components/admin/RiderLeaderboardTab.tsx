@@ -40,6 +40,14 @@ export function RiderLeaderboardTab() {
     onSuccess: () => { toast.success("Rider removed"); qc.invalidateQueries({ queryKey: ["rider-leaderboard"] }); },
     onError: (e: any) => toast.error(e.message),
   });
+  const reapply = useMutation({
+    mutationFn: async (rider_id: string) => {
+      const { error } = await (supabase as any).rpc("admin_require_rider_reapply", { _rider_id: rider_id });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Rider removed — they must reapply"); qc.invalidateQueries({ queryKey: ["rider-leaderboard"] }); },
+    onError: (e: any) => toast.error(e.message),
+  });
   const restore = useMutation({
     mutationFn: async (rider_id: string) => {
       const { error } = await (supabase as any).rpc("admin_restore_rider", { _rider_id: rider_id });
@@ -124,6 +132,12 @@ export function RiderLeaderboardTab() {
                         <Ban className="h-3 w-3" /> Remove
                       </button>
                     )}
+                    <button
+                      onClick={() => { if (confirm(`Remove ${r.full_name} and require a new application?`)) reapply.mutate(r.rider_id); }}
+                      className="ml-1 inline-flex items-center gap-1 rounded-full border border-input px-3 py-1 text-xs font-semibold hover:bg-muted"
+                    >
+                      <RotateCcw className="h-3 w-3" /> Require reapply
+                    </button>
                   </td>
                 </tr>
               ))}
