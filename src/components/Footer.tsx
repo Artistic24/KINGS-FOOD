@@ -54,7 +54,7 @@ export function Footer() {
       </div>
       <div className="border-t border-background/10">
         <p className="mx-auto max-w-7xl px-4 py-4 text-xs text-background/60 md:px-6">
-          © {new Date().getFullYear()} {brand.brand_name} Cameroon. Everything you need, one storefront.
+          © {new Date().getFullYear()} {brand.brand_name} Cameroon. All rights reserved. Everything you need, one storefront.
         </p>
       </div>
     </footer>
