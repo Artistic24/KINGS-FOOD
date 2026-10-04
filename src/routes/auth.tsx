@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { isNativeApp, startNativeGoogleSignIn } from "@/lib/native-auth";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
 
@@ -59,6 +60,16 @@ function AuthPage() {
 
   const onGoogle = async () => {
     setLoading(true);
+    if (await isNativeApp()) {
+      try {
+        await startNativeGoogleSignIn(redirect);
+      } catch (err: any) {
+        toast.error(err?.message ?? "Google sign-in failed");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,

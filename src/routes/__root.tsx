@@ -17,6 +17,7 @@ import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { Toaster } from "../components/ui/sonner";
 import { supabase } from "../integrations/supabase/client";
+import { listenForNativeAuth } from "../lib/native-auth";
 import { SupportButton } from "../components/SupportButton";
 import { GlobalChat } from "../components/GlobalChat";
 import { AdsPopup } from "../components/AdsPopup";
@@ -133,6 +134,8 @@ function RootComponent() {
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
+
+  useEffect(() => listenForNativeAuth((to) => void router.navigate({ to, replace: true })), [router]);
 
   return (
     <QueryClientProvider client={queryClient}>

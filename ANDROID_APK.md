@@ -29,6 +29,14 @@ The launcher icon and splash screen are generated from the KF logo in
 `assets/` (`icon-only.png`, `icon-foreground.png`, `icon-background.png`,
 `splash.png`, `splash-dark.png`). Replace those files to change them.
 
+## Google sign-in
+
+Google does not allow its sign-in page inside an app's web view. In the APK,
+"Continue with Google" opens Google in an in-app browser tab; after sign-in,
+`public/native-auth-callback.html` hands the session back to the app through
+the `com.kingsfood.app://auth-callback` link, which the workflow registers in
+`AndroidManifest.xml`. The browser tab then closes and the user is signed in.
+
 ## Publishing it in the app
 
 Upload the `.apk` somewhere public (GitHub release asset works) and paste the

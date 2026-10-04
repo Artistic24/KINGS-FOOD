@@ -28,11 +28,24 @@ jobs:
           java-version: 17
 
       - name: Install Capacitor
-        run: npm i --no-save @capacitor/cli@6 @capacitor/core@6 @capacitor/android@6
+        run: npm i --no-save @capacitor/cli@6 @capacitor/core@6 @capacitor/android@6 @capacitor/app@6 @capacitor/browser@6
 
       - name: Generate the Android project
         run: |
           npx cap add android
+          python3 - <<'PY'
+          # Deep link used to return from Google sign-in (see src/lib/native-auth.ts).
+          path = "android/app/src/main/AndroidManifest.xml"
+          xml = open(path).read()
+          deep_link = """</intent-filter>
+                      <intent-filter>
+                          <action android:name="android.intent.action.VIEW" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <category android:name="android.intent.category.BROWSABLE" />
+                          <data android:scheme="com.kingsfood.app" android:host="auth-callback" />
+                      </intent-filter>"""
+          open(path, "w").write(xml.replace("</intent-filter>", deep_link, 1))
+          PY
           npx --yes @capacitor/assets@3 generate --android --iconBackgroundColor '#ffffff' --splashBackgroundColor '#ffffff'
           npx cap sync android
 
