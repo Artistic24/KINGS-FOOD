@@ -169,7 +169,7 @@ function AdminPage() {
     { key: "ads", label: "Ads", icon: Megaphone },
     { key: "slides", label: "Home adverts", icon: Images },
     { key: "exports", label: "Exports", icon: Download },
-    { key: "code", label: "Source code", icon: FolderArchive },
+    { key: "code", label: "Android app", icon: FolderArchive },
     { key: "media", label: "Media", icon: ImageIcon },
     ...(isSuper ? [{ key: "roles" as TabKey, label: "Roles", icon: KeyRound }] : []),
   ];
