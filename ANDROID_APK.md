@@ -37,6 +37,14 @@ Google does not allow its sign-in page inside an app's web view. In the APK,
 the `com.kingsfood.app://auth-callback` link, which the workflow registers in
 `AndroidManifest.xml`. The browser tab then closes and the user is signed in.
 
+## Connection errors
+
+If the live site can't be reached (no signal, or a VPN / ad blocker blocking
+`*.lovable.app`), the app shows `android-shell/error.html` (`server.errorPath`
+in `capacitor.config.json`) with tips and a "Try again" button instead of
+Android's "Webpage not available" page. If the app moves to a custom domain,
+update `APP_URL` in that file along with `server.url`.
+
 ## Publishing it in the app
 
 Upload the `.apk` somewhere public (GitHub release asset works) and paste the
