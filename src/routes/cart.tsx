@@ -4,7 +4,7 @@ import { useCart } from "@/lib/cart";
 import { formatXAF } from "@/lib/format";
 
 export const Route = createFileRoute("/cart")({
-  head: () => ({ meta: [{ title: "Your cart — St Kingston" }] }),
+  head: () => ({ meta: [{ title: "Your cart — KINGS FOOD" }] }),
   component: CartPage,
 });
 

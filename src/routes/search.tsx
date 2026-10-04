@@ -8,8 +8,8 @@ import { ProductCard } from "@/components/ProductCard";
 export const Route = createFileRoute("/search")({
   head: () => ({
     meta: [
-      { title: "Search — St Kingston" },
-      { name: "description", content: "Search the full St Kingston catalog: food, supermarket, fashion, salon services and more." },
+      { title: "Search — KINGS FOOD" },
+      { name: "description", content: "Search the full KINGS FOOD catalog: food, supermarket, fashion, salon services and more." },
     ],
   }),
   component: SearchPage,

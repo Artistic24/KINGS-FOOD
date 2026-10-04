@@ -10,7 +10,7 @@ const searchSchema = z.object({ redirect: z.string().optional() });
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s) => searchSchema.parse(s),
-  head: () => ({ meta: [{ title: "Sign in — St Kingston" }] }),
+  head: () => ({ meta: [{ title: "Sign in — KINGS FOOD" }] }),
   component: AuthPage,
 });
 
@@ -42,7 +42,7 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Welcome to St Kingston!");
+        toast.success("Welcome to KINGS FOOD!");
         navigate({ to: redirect ?? "/", replace: true });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -77,7 +77,7 @@ function AuthPage() {
   return (
     <div className="mx-auto flex max-w-md flex-col px-4 py-12 md:py-20">
       <div className="text-center">
-        <span className="grid mx-auto h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground font-display text-xl font-bold">SK</span>
+        <span className="grid mx-auto h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground font-display text-xl font-bold">KF</span>
         <h1 className="mt-4 font-display text-3xl font-bold">
           {mode === "signin" ? "Welcome back" : "Create your account"}
         </h1>
@@ -139,7 +139,7 @@ function AuthPage() {
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        {mode === "signin" ? "New to St Kingston?" : "Already have an account?"}{" "}
+        {mode === "signin" ? "New to KINGS FOOD?" : "Already have an account?"}{" "}
         <button onClick={() => setMode(mode === "signin" ? "signup" : "signin")} className="font-semibold text-primary hover:underline">
           {mode === "signin" ? "Create an account" : "Sign in"}
         </button>

@@ -19,9 +19,9 @@ import { recommendProducts } from "@/lib/recommendations";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "St Kingston — Cameroon's all-in-one marketplace" },
+      { title: "KINGS FOOD — Cameroon's all-in-one marketplace" },
       { name: "description", content: "Order burgers, pizza, fresh poultry, supermarket goods, fashion and salon bookings. Delivered to all 10 regions of Cameroon. Pay with MTN Mobile Money, Orange Money or cash on delivery." },
-      { property: "og:title", content: "St Kingston — Cameroon's all-in-one marketplace" },
+      { property: "og:title", content: "KINGS FOOD — Cameroon's all-in-one marketplace" },
       { property: "og:description", content: "Eight sectors, one storefront. Delivered across Cameroon." },
       { property: "og:image", content: heroImg },
       { name: "twitter:image", content: heroImg },

@@ -13,7 +13,7 @@ import { GoogleMap } from "@/components/GoogleMap";
 import { computeRoute } from "@/lib/rider.functions";
 
 export const Route = createFileRoute("/orders/$orderNumber")({
-  head: ({ params }) => ({ meta: [{ title: `Order ${params.orderNumber} — St Kingston` }] }),
+  head: ({ params }) => ({ meta: [{ title: `Order ${params.orderNumber} — KINGS FOOD` }] }),
   component: OrderPage,
 });
 

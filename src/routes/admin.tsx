@@ -819,7 +819,7 @@ function UsersTab() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search customers by name, phone, or order # (SK-…)"
+          placeholder="Search customers by name, phone, or order # (KF-…)"
           className="w-full rounded-full border border-input bg-card pl-10 pr-4 py-2.5 text-sm"
         />
       </div>
@@ -1248,7 +1248,7 @@ function SupportSettingsTab() {
       <div className="mt-4 border-t border-border pt-4">
         <h3 className="mb-2 font-display text-sm font-bold">Android APK download</h3>
         <Field label="APK file URL (leave empty to hide button)">
-          <input value={s.apk_url ?? ""} onChange={(e) => setS({ ...s, apk_url: e.target.value })} placeholder="https://…/stkingston.apk" className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+          <input value={s.apk_url ?? ""} onChange={(e) => setS({ ...s, apk_url: e.target.value })} placeholder="https://…/kingsfood.apk" className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
         </Field>
         <Field label="Button label">
           <input value={s.apk_label ?? ""} onChange={(e) => setS({ ...s, apk_label: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />

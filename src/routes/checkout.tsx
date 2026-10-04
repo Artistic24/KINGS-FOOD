@@ -14,7 +14,7 @@ import { MapPicker } from "@/components/MapPicker";
 import { CheckoutTutorial } from "@/components/CheckoutTutorial";
 
 export const Route = createFileRoute("/checkout")({
-  head: () => ({ meta: [{ title: "Checkout — St Kingston" }] }),
+  head: () => ({ meta: [{ title: "Checkout — KINGS FOOD" }] }),
   component: CheckoutPage,
 });
 
@@ -138,7 +138,7 @@ function CheckoutPage() {
       const row = Array.isArray(data) && data.length > 0 ? (data[0] as NearestAdmin) : null;
       if (!row) {
         setAdminCheckMsg(
-          `No St Kingston admin found within 10 km of your location in ${form.region} / ${form.city}. We can't deliver here yet.`,
+          `No KINGS FOOD admin found within 10 km of your location in ${form.region} / ${form.city}. We can't deliver here yet.`,
         );
       } else {
         setNearestAdmin(row);
@@ -196,7 +196,7 @@ function CheckoutPage() {
     if (!nearestAdmin) {
       toast.error(
         adminCheckMsg ||
-          "We can't confirm a St Kingston admin near you yet. Adjust your region/town or pin location.",
+          "We can't confirm a KINGS FOOD admin near you yet. Adjust your region/town or pin location.",
       );
       return;
     }
@@ -437,11 +437,11 @@ function CheckoutPage() {
                     <div className="rounded-xl bg-muted px-3 py-2 text-xs">📡 Checking coverage near you…</div>
                   ) : nearestAdmin ? (
                     <div className="rounded-xl bg-forest/10 px-3 py-2 text-xs text-forest">
-                      ✅ Coverage confirmed — closest St Kingston admin in {nearestAdmin.region} / {nearestAdmin.town} is {nearestAdmin.distance_km.toFixed(1)} km from your pin.
+                      ✅ Coverage confirmed — closest KINGS FOOD admin in {nearestAdmin.region} / {nearestAdmin.town} is {nearestAdmin.distance_km.toFixed(1)} km from your pin.
                     </div>
                   ) : (
                     <div className="rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive">
-                      ⚠️ {adminCheckMsg ?? `No St Kingston admin within 10 km of ${form.region} / ${form.city}.`}
+                      ⚠️ {adminCheckMsg ?? `No KINGS FOOD admin within 10 km of ${form.region} / ${form.city}.`}
                     </div>
                   )}
                 </div>
@@ -473,7 +473,7 @@ function CheckoutPage() {
                 />
               ) : (
                 <div className="mt-4 rounded-xl border border-dashed border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
-                  🔒 Transfer details are hidden until your location is confirmed within 10 km of a St Kingston admin in your region & town. Fill in your region, town and drop your delivery pin above.
+                  🔒 Transfer details are hidden until your location is confirmed within 10 km of a KINGS FOOD admin in your region & town. Fill in your region, town and drop your delivery pin above.
                 </div>
               )
             )}
@@ -524,7 +524,7 @@ function CheckoutPage() {
           <button
             type="submit"
             disabled={submitting || !nearestAdmin}
-            title={!nearestAdmin ? "Confirm your location is within 10 km of a St Kingston admin" : undefined}
+            title={!nearestAdmin ? "Confirm your location is within 10 km of a KINGS FOOD admin" : undefined}
             className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting && <Loader2 className="h-4 w-4 animate-spin" />}

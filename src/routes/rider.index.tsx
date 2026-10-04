@@ -17,7 +17,7 @@ import { metersBetween, nextStepAhead, ringArrival, setVoiceEnabled, speak, stop
 
 
 export const Route = createFileRoute("/rider/")({
-  head: () => ({ meta: [{ title: "Rider dashboard — St Kingston" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Rider dashboard — KINGS FOOD" }, { name: "robots", content: "noindex" }] }),
   component: RiderDashboard,
 });
 

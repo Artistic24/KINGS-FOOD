@@ -5,7 +5,7 @@ type Rule = { test: RegExp; answer: string };
 
 const RULES: Rule[] = [
   { test: /\b(hi|hello|hey|salut|bonjour)\b/i,
-    answer: "Hi there! 👋 I'm the ST Kingston bot. Ask me about orders, delivery, payments, becoming an admin, or downloading the app." },
+    answer: "Hi there! 👋 I'm the KINGS FOOD bot. Ask me about orders, delivery, payments, becoming an admin, or downloading the app." },
 
   { test: /\b(order|orders|track|tracking|where.*order)\b/i,
     answer: "To track an order, open **Account → Orders** or visit the order page with your order number. Each order shows live status and assigned admin." },
@@ -20,7 +20,7 @@ const RULES: Rule[] = [
     answer: "Go to **Account → Request admin badge**, fill the form (name, phone, region, town, GPS pin) and a super admin will approve. Only 1 admin is allowed per town." },
 
   { test: /\b(apk|download|install|app)\b/i,
-    answer: "Tap the **Download APK** button on the homepage to install ST Kingston as an app on your Android phone." },
+    answer: "Tap the **Download APK** button on the homepage to install KINGS FOOD as an app on your Android phone." },
 
   { test: /\b(support|contact|complaint|help.*admin|email)\b/i,
     answer: "Tap the **Support** button (bottom-right) to email the team at coremagazinee@gmail.com." },
@@ -57,4 +57,4 @@ export function getBotReply(msg: string): string | null {
   return "I'm not sure about that one. Try asking about **orders, delivery, payments, admin requests, downloading the app, or support**. For anything else, tap the Support button to email the team.";
 }
 
-export const BOT_NAME = "ST Kingston Bot";
+export const BOT_NAME = "KINGS FOOD Bot";

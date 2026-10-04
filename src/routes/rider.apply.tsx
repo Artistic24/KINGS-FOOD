@@ -8,7 +8,7 @@ import { sampleFace, blendSample, type FaceSample } from "@/lib/face-liveness";
 import { fetchVerification, type Verification } from "@/lib/shop";
 
 export const Route = createFileRoute("/rider/apply")({
-  head: () => ({ meta: [{ title: "Become a rider — St Kingston" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Become a rider — KINGS FOOD" }, { name: "robots", content: "noindex" }] }),
   component: RiderApplyPage,
 });
 

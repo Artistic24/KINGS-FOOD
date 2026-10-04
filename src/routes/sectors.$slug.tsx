@@ -14,9 +14,9 @@ export const Route = createFileRoute("/sectors/$slug")({
   head: ({ loaderData }) => ({
     meta: loaderData
       ? [
-          { title: `${loaderData.sector.name} — St Kingston Cameroon` },
-          { name: "description", content: `${loaderData.sector.tagline ?? loaderData.sector.name} — shop ${loaderData.sector.name.toLowerCase()} from St Kingston, delivered across Cameroon.` },
-          { property: "og:title", content: `${loaderData.sector.name} — St Kingston` },
+          { title: `${loaderData.sector.name} — KINGS FOOD Cameroon` },
+          { name: "description", content: `${loaderData.sector.tagline ?? loaderData.sector.name} — shop ${loaderData.sector.name.toLowerCase()} from KINGS FOOD, delivered across Cameroon.` },
+          { property: "og:title", content: `${loaderData.sector.name} — KINGS FOOD` },
           { property: "og:description", content: loaderData.sector.tagline ?? "" },
         ]
       : [],
@@ -80,7 +80,7 @@ function SectorPage() {
             </div>
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.2em]" style={{ color }}>
-                St Kingston
+                KINGS FOOD
               </p>
               <h1 className="font-display text-3xl font-bold md:text-5xl">{sector.name}</h1>
             </div>
