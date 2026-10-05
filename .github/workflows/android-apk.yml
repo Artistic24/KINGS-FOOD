@@ -32,11 +32,68 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Install Capacitor Android runtime
-        run: npm i --no-save @capacitor/cli@6 @capacitor/core@6 @capacitor/android@6
+        run: npm i --no-save @capacitor/cli@6 @capacitor/core@6 @capacitor/android@6 @capacitor/inappbrowser@latest-6
 
       - name: Generate the Android project
         run: |
           npx cap add android
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          variables = Path("android/variables.gradle")
+          if variables.exists():
+            text = variables.read_text()
+            text = re.sub(r"minSdkVersion\s*=\s*\d+", "minSdkVersion = 26", text)
+            variables.write_text(text)
+
+          main_activity = next(Path("android/app/src/main/java").rglob("MainActivity.java"))
+          source = main_activity.read_text()
+          package_match = re.search(r"^package\s+([\w.]+);", source, re.MULTILINE)
+          if not package_match:
+            raise RuntimeError("Could not find MainActivity package declaration")
+          package_name = package_match.group(1)
+          main_activity.write_text("""package PACKAGE_NAME;
+
+          import android.content.Intent;
+          import android.util.Log;
+
+          import com.getcapacitor.BridgeActivity;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginHandle;
+
+          import ee.forgr.capacitor.social.login.GoogleProvider;
+          import ee.forgr.capacitor.social.login.ModifiedMainActivityForSocialLoginPlugin;
+          import ee.forgr.capacitor.social.login.SocialLoginPlugin;
+
+          public class MainActivity extends BridgeActivity implements ModifiedMainActivityForSocialLoginPlugin {
+            @Override
+            public void onActivityResult(int requestCode, int resultCode, Intent data) {
+              super.onActivityResult(requestCode, resultCode, data);
+
+              if (requestCode >= GoogleProvider.REQUEST_AUTHORIZE_GOOGLE_MIN
+                  && requestCode < GoogleProvider.REQUEST_AUTHORIZE_GOOGLE_MAX) {
+                PluginHandle pluginHandle = getBridge().getPlugin("SocialLogin");
+                if (pluginHandle == null) {
+                  Log.i("Google Activity Result", "SocialLogin login handle is null");
+                  return;
+                }
+
+                Plugin plugin = pluginHandle.getInstance();
+                if (!(plugin instanceof SocialLoginPlugin)) {
+                  Log.i("Google Activity Result", "SocialLogin plugin instance is not SocialLoginPlugin");
+                  return;
+                }
+
+                ((SocialLoginPlugin) plugin).handleGoogleLoginIntent(requestCode, data);
+              }
+            }
+
+            @Override
+            public void IHaveModifiedTheMainActivityForTheUseWithSocialLoginPlugin() {}
+          }
+          """.replace("PACKAGE_NAME", package_name))
+          PY
           python3 - <<'PY'
           path = "android/app/src/main/AndroidManifest.xml"
           xml = open(path).read()
