@@ -17,7 +17,7 @@ import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { Toaster } from "../components/ui/sonner";
 import { supabase } from "../integrations/supabase/client";
-import { listenForNativeAuth } from "../lib/native-auth";
+import { setupNativeDeviceAccess } from "@/lib/native-device";
 import { SupportButton } from "../components/SupportButton";
 import { GlobalChat } from "../components/GlobalChat";
 import { AdsPopup } from "../components/AdsPopup";
