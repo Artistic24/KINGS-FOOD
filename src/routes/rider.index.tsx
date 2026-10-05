@@ -8,6 +8,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { buyerPin } from "@/lib/buyer-pin";
 import { GoogleMap } from "@/components/GoogleMap";
 import { computeRoute } from "@/lib/rider.functions";
+import { sendPushForNotifications } from "@/lib/push.functions";
+import { sendDeliveryEmail } from "@/lib/delivery-email.functions";
 import { formatXAF } from "@/lib/format";
 import { RiderMapsPanel } from "@/components/RiderMapsPanel";
 import { CopyButton } from "@/components/CopyButton";
@@ -309,6 +311,22 @@ function ActiveDelivery({ order, rider, onDone }: { order: any; rider: any; onDo
     stopRinging();
     await setStatus("delivered", { delivered_at: new Date().toISOString(), status: "delivered" });
     await (supabase as any).from("rider_locations").delete().eq("order_id", order.id);
+
+    const { data: notification, error: notificationError } = await (supabase as any)
+      .from("notifications")
+      .insert({
+        user_id: order.user_id,
+        title: "Your order was delivered",
+        body: `Order ${order.order_number} was delivered successfully.`,
+        link: `/orders/${order.order_number}`,
+      })
+      .select("id")
+      .single();
+    if (!notificationError && notification?.id) {
+      void sendPushForNotifications({ data: { notificationIds: [notification.id] } }).catch((e) => console.warn("Push delivery failed", e));
+    }
+    void sendDeliveryEmail({ data: { orderId: order.id } }).catch((e) => console.warn("Delivery email failed", e));
+
     toast.success("Delivery completed!");
     onDone();
   };
