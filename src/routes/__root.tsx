@@ -17,7 +17,7 @@ import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { Toaster } from "../components/ui/sonner";
 import { supabase } from "../integrations/supabase/client";
-import { listenForNativeAuth } from "../lib/native-auth";
+import { setupNativeDeviceAccess } from "@/lib/native-device";
 import { SupportButton } from "../components/SupportButton";
 import { GlobalChat } from "../components/GlobalChat";
 import { AdsPopup } from "../components/AdsPopup";
@@ -135,7 +135,18 @@ function RootComponent() {
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
 
-  useEffect(() => listenForNativeAuth((to) => void router.navigate({ to, replace: true })), [router]);
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setupNativeDeviceAccess(data.user.id).then((fn) => { cleanup = fn; });
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        setupNativeDeviceAccess(session.user.id).then((fn) => { cleanup = fn; });
+      }
+    });
+    return () => { cleanup?.(); sub.subscription.unsubscribe(); };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

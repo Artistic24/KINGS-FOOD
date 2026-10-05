@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Bell, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { REGIONS } from "@/lib/cameroon-towns";
+import { sendPushForNotifications } from "@/lib/push.functions";
 
 const sb = supabase as any;
 const inp = "w-full rounded-xl border border-input bg-background px-3 py-2 text-sm";
@@ -56,10 +57,14 @@ export function NotificationsTab() {
         ids = (people || []).map((p) => p.id);
       }
       if (ids.length === 0) throw new Error("No recipients found");
-      const { error } = await sb.from("notifications").insert(
-        ids.map((id) => ({ user_id: id, title: title.trim(), body: body.trim() || null })),
-      );
+      const { data: created, error } = await sb.from("notifications")
+        .insert(ids.map((id) => ({ user_id: id, title: title.trim(), body: body.trim() || null })))
+        .select("id");
       if (error) throw error;
+      if (created?.length) {
+        void sendPushForNotifications({ data: { notificationIds: created.map((n: any) => n.id) } })
+          .catch((e) => console.warn("Push notification delivery failed", e));
+      }
       return ids.length;
     },
     onSuccess: (n) => { toast.success(`Sent to ${n} customer${n === 1 ? "" : "s"}`); setTitle(""); setBody(""); qc.invalidateQueries({ queryKey: ["admin-notify-history"] }); },
