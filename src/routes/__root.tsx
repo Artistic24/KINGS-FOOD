@@ -10,6 +10,8 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Capacitor } from "@capacitor/core";
+import { InAppBrowser } from "@capacitor/inappbrowser";
 
 import appCss from "../styles.css?url";
 import { reportAppError } from "../lib/error-reporting";
@@ -17,6 +19,7 @@ import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { Toaster } from "../components/ui/sonner";
 import { supabase } from "../integrations/supabase/client";
+import { initializeNativeGoogleSignIn } from "@/lib/native-auth";
 import { setupNativeDeviceAccess } from "@/lib/native-device";
 import { SupportButton } from "../components/SupportButton";
 import { GlobalChat } from "../components/GlobalChat";
@@ -125,6 +128,50 @@ function RootComponent() {
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isHome = pathname === "/";
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      initializeNativeGoogleSignIn().catch((error) => {
+        console.warn("Native Google Sign-In initialization failed:", error);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const onDocumentClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest("a[href]") as HTMLAnchorElement | null;
+      if (!anchor) return;
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+      const href = anchor.href;
+      if (!href || !/^https?:\/\//i.test(href)) return;
+
+      const url = new URL(href);
+      if (url.origin === window.location.origin) return;
+
+      event.preventDefault();
+      InAppBrowser.openInWebView({
+        url,
+        options: {
+          showURL: true,
+          showToolbar: true,
+          showNavigationButtons: true,
+          closeButtonText: "Close",
+          hardwareBack: true,
+          android: { isIsolated: true },
+        },
+      }).catch((error) => {
+        console.warn("Could not open link in the in-app browser:", error);
+        window.location.href = href;
+      });
+    };
+
+    document.addEventListener("click", onDocumentClick, true);
+    return () => document.removeEventListener("click", onDocumentClick, true);
+  }, []);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
