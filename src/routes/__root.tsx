@@ -11,7 +11,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Capacitor } from "@capacitor/core";
-import { InAppBrowser } from "@capacitor/inappbrowser";
+import { Browser } from "@capacitor/browser";
 
 import appCss from "../styles.css?url";
 import { reportAppError } from "../lib/error-reporting";
@@ -153,17 +153,7 @@ function RootComponent() {
       if (url.origin === window.location.origin) return;
 
       event.preventDefault();
-      InAppBrowser.openInWebView({
-        url: href,
-        options: {
-          showURL: true,
-          showToolbar: true,
-          showNavigationButtons: true,
-          closeButtonText: "Close",
-          hardwareBack: true,
-          android: { isIsolated: true },
-        },
-      }).catch((error) => {
+      Browser.open({ url: href }).catch((error) => {
         console.warn("Could not open link in the in-app browser:", error);
         window.location.href = href;
       });
