@@ -5,19 +5,34 @@ import { toast } from "sonner";
 
 const GOOGLE_WEB_CLIENT_ID = import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID as string | undefined;
 
+let googleInitPromise: Promise<void> | null = null;
+
 export async function isNativeApp() {
   return Capacitor.isNativePlatform();
 }
 
-export async function startNativeGoogleSignIn(redirect?: string) {
-  if (!Capacitor.isNativePlatform()) throw new Error("Native Google sign-in is only available in the Android app");
+export async function initializeNativeGoogleSignIn() {
+  if (!Capacitor.isNativePlatform()) return;
   if (!GOOGLE_WEB_CLIENT_ID) {
     throw new Error("Google native sign-in is not configured. Set VITE_GOOGLE_WEB_CLIENT_ID to the Google Web OAuth client ID.");
   }
 
-  await SocialLogin.initialize({
-    google: { webClientId: GOOGLE_WEB_CLIENT_ID, mode: "online" },
-  });
+  if (!googleInitPromise) {
+    googleInitPromise = SocialLogin.initialize({
+      google: { webClientId: GOOGLE_WEB_CLIENT_ID, mode: "online" },
+    }).catch((error) => {
+      googleInitPromise = null;
+      throw error;
+    });
+  }
+
+  await googleInitPromise;
+}
+
+export async function startNativeGoogleSignIn(redirect?: string) {
+  if (!Capacitor.isNativePlatform()) throw new Error("Native Google sign-in is only available in the Android app");
+
+  await initializeNativeGoogleSignIn();
 
   const response = await SocialLogin.login({
     provider: "google",
