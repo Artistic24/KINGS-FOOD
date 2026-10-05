@@ -72,4 +72,42 @@ export async function setupNativeDeviceAccess(userId: string) {
     action.remove();
     push.remove();
   };
+}  try {
+    await PushNotifications.requestPermissions();
+    await PushNotifications.register();
+  } catch (error) {
+    console.warn("Push notification permission failed", error);
+  }
+
+  const registration = await PushNotifications.addListener("registration", async ({ value }) => {
+    const { error } = await (supabase as any).from("device_push_tokens").upsert(
+      { user_id: userId, token: value, platform: Capacitor.getPlatform(), updated_at: new Date().toISOString() },
+      { onConflict: "token" },
+    );
+    if (error) console.warn("Could not save push token", error.message);
+  });
+
+  const action = await PushNotifications.addListener("pushNotificationActionPerformed", ({ notification }) => {
+    const link = (notification.data as any)?.link;
+    if (typeof link === "string" && link.startsWith("/")) window.location.href = link;
+  });
+
+  const push = await PushNotifications.addListener("pushNotificationReceived", (notification) => {
+    void LocalNotifications.schedule({
+      notifications: [{
+        id: ++notificationId,
+        title: notification.title ?? "KINGS FOOD",
+        body: notification.body ?? "",
+        channelId: "kingsfood",
+        schedule: { at: new Date(Date.now() + 250) },
+        extra: notification.data,
+      }],
+    }).catch(() => {});
+  });
+
+  return () => {
+    registration.remove();
+    action.remove();
+    push.remove();
+  };
 }
