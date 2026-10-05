@@ -80,7 +80,8 @@
     "@capacitor/push-notifications": "^6.0.3",
     "@capgo/capacitor-social-login": "^6.0.0",
     "google-auth-library": "^9.15.1",
-    "resend": "^4.0.1"
+    "resend": "^4.0.1",
+    "@capacitor/inappbrowser": "^1.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
