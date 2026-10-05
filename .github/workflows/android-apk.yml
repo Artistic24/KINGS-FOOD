@@ -27,8 +27,11 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Install Capacitor
-        run: npm i --no-save @capacitor/cli@6 @capacitor/core@6 @capacitor/android@6 @capacitor/app@6 @capacitor/browser@6
+      - name: Install app dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Install Capacitor Android runtime
+        run: npm i --no-save @capacitor/cli@6 @capacitor/core@6 @capacitor/android@6
 
       - name: Generate the Android project
         run: |
@@ -45,7 +48,24 @@ jobs:
                           <data android:scheme="com.kingsfood.app" android:host="auth-callback" />
                       </intent-filter>"""
           open(path, "w").write(xml.replace("</intent-filter>", deep_link, 1))
+          permissions = """  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+          <uses-permission android:name="android.permission.CAMERA" />
+          <uses-permission android:name="android.permission.RECORD_AUDIO" />
+          <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+          <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+          <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+          <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+          <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+          <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+          <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+          <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+          """
+          xml = xml.replace("<application", permissions + "\n    <application", 1)
+          open(path, "w").write(xml)
           PY
+          if [ -n "${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON_BASE64 }}" ]; then
+            echo "${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON_BASE64 }}" | base64 --decode > android/app/google-services.json
+          fi
           npx --yes @capacitor/assets@3 generate --android --iconBackgroundColor '#ffffff' --splashBackgroundColor '#ffffff'
           npx cap sync android
 
