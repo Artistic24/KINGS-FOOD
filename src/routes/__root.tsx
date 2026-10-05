@@ -154,7 +154,7 @@ function RootComponent() {
 
       event.preventDefault();
       InAppBrowser.openInWebView({
-        url,
+        url: href,
         options: {
           showURL: true,
           showToolbar: true,
