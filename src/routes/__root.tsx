@@ -135,7 +135,7 @@ function RootComponent() {
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
 
-  useEffect(() => listenForNativeAuth((to) => void router.navigate({ to, replace: true })), [router]);
+  useEffect(() => {\n    let cleanup: (() => void) | undefined;\n    supabase.auth.getUser().then(({ data }) => {\n      if (data.user) setupNativeDeviceAccess(data.user.id).then((fn) => { cleanup = fn; });\n    });\n    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {\n      if (event === "SIGNED_IN" && session?.user) setupNativeDeviceAccess(session.user.id).then((fn) => { cleanup = fn; });\n    });\n    return () => { cleanup?.(); sub.subscription.unsubscribe(); };\n  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
