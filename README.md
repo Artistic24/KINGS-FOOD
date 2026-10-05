@@ -1,4 +1,4 @@
-# KINGS FOOD Marketplace
+# Kings Food Cameroon 
 
 KINGS FOOD is Cameroon's all-in-one marketplace, operated by Kingsfood (KINGS FOOD). It brings the company's sectors — poultry farming, chicken and cheese, burgers, pizza and fries, men's and women's hairstyles, fashion (dresses and shoes) and a supermarket — into a single online store with integrated payments and GPS-tracked delivery across all 10 regions of Cameroon.
 
