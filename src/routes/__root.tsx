@@ -135,7 +135,18 @@ function RootComponent() {
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
 
-  useEffect(() => {\n    let cleanup: (() => void) | undefined;\n    supabase.auth.getUser().then(({ data }) => {\n      if (data.user) setupNativeDeviceAccess(data.user.id).then((fn) => { cleanup = fn; });\n    });\n    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {\n      if (event === "SIGNED_IN" && session?.user) setupNativeDeviceAccess(session.user.id).then((fn) => { cleanup = fn; });\n    });\n    return () => { cleanup?.(); sub.subscription.unsubscribe(); };\n  }, []);
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setupNativeDeviceAccess(data.user.id).then((fn) => { cleanup = fn; });
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        setupNativeDeviceAccess(session.user.id).then((fn) => { cleanup = fn; });
+      }
+    });
+    return () => { cleanup?.(); sub.subscription.unsubscribe(); };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
