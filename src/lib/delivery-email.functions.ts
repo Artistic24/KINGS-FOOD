@@ -30,10 +30,6 @@ export const sendDeliveryEmail = createServerFn({ method: "POST" })
       .maybeSingle();
     if (preference?.notify_email === false) return { sent: false, reason: "email_disabled" };
 
-    const { data: claim, error: claimError } = await sb.rpc("claim_delivery_email", { _order_id: order.id });
-    if (claimError) throw claimError;
-    if (!claim) return { sent: false, reason: "already_sent" };
-
     const { data: userData, error: userError } = await sb.auth.admin.getUserById(order.user_id);
     if (userError) throw userError;
     const email = userData.user?.email;
@@ -42,9 +38,13 @@ export const sendDeliveryEmail = createServerFn({ method: "POST" })
     const apiKey = process.env.RESEND_API_KEY;
     const from = process.env.RESEND_FROM_EMAIL || "KINGS FOOD <onboarding@resend.dev>";
     if (!apiKey) {
-      console.warn("RESEND_API_KEY is not configured; delivery email was claimed but not sent.");
+      console.warn("RESEND_API_KEY is not configured; delivery email was not sent.");
       return { sent: false, reason: "email_provider_not_configured" };
     }
+
+    const { data: claim, error: claimError } = await sb.rpc("claim_delivery_email", { _order_id: order.id });
+    if (claimError) throw claimError;
+    if (!claim) return { sent: false, reason: "already_sent" };
 
     const resend = new Resend(apiKey);
     const { error } = await resend.emails.send({
