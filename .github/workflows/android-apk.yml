@@ -3,6 +3,7 @@ name: Build KINGS FOOD Android APK
 # Produces a downloadable APK on every push to main and on manual runs.
 # The APK is a native Android shell that loads the live KINGS FOOD site,
 # so GPS, camera (ID / face verification) and push-style alerts all work.
+# Release refresh: rebuild latest APK from current main.
 
 on:
   push:
