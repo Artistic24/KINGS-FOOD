@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "windows:build": "electron-builder --win nsis --x64 --ia32"
+    "windows:build": "electron-builder --win nsis --x64 --ia32 --publish never"
   },
   "dependencies": {
     "@capacitor/app": "^6.0.3",
