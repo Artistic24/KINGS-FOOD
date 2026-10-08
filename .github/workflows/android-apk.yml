@@ -42,6 +42,12 @@ jobs:
             echo "Building with native Google configuration."
           fi
           npm run build
+          # Nuxt/Nitro outputs the browser assets to .output/public.
+          # Capacitor is configured for dist, so create the expected bundle explicitly.
+          rm -rf dist
+          mkdir -p dist
+          cp -R .output/public/. dist/
+          test -f dist/index.html
 
       - name: Install Capacitor Android runtime
         run: npm i --no-save @capacitor/cli@6 @capacitor/core@6 @capacitor/android@6
