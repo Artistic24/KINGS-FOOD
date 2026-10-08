@@ -32,7 +32,14 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Build the web app for the native Android bundle
-        run: npm run build
+        env:
+          VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID }}
+        run: |
+          if [ -z "$VITE_GOOGLE_WEB_CLIENT_ID" ]; then
+            echo "Missing GitHub Actions secret: VITE_GOOGLE_WEB_CLIENT_ID"
+            exit 1
+          fi
+          npm run build
 
       - name: Install Capacitor Android runtime
         run: npm i --no-save @capacitor/cli@6 @capacitor/core@6 @capacitor/android@6
