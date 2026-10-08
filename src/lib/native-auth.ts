@@ -14,7 +14,7 @@ export async function initializeNativeGoogleSignIn() {
   if (!isNativeApp()) return;
 
   if (!GOOGLE_WEB_CLIENT_ID) {
-    throw new Error("Google sign-in is not configured for this app. Add the Google Web OAuth client ID before building the APK.");
+    throw new Error("Native Google sign-in is not configured in this build.");
   }
 
   if (!googleInitPromise) {
