@@ -27,3 +27,6 @@ See [ANDROID_APK.md](./ANDROID_APK.md) for building the Android app.
 ## Ownership
 
 © 2026 Kingsfood (KINGS FOOD). All rights reserved. Proprietary software owned exclusively by Kingsfood.
+
+### Google sign-in
+On Android, Google sign-in uses the native Credential Manager bottom-sheet account picker so users can choose their Google account without a browser redirect.
