@@ -34,9 +34,15 @@ export async function startNativeGoogleSignIn(redirect?: string) {
 
   await initializeNativeGoogleSignIn();
 
+  // Android uses Google Credential Manager. "bottom" keeps the Google account
+  // picker as an in-app bottom sheet instead of sending the user to a browser.
   const response = await SocialLogin.login({
     provider: "google",
-    options: { scopes: ["email", "profile"] },
+    options: {
+      scopes: ["email", "profile"],
+      style: "bottom",
+      filterByAuthorizedAccounts: false,
+    },
   });
 
   const result = response.result as { responseType?: string; idToken?: string; accessToken?: string };
