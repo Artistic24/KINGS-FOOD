@@ -9,7 +9,8 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "windows:build": "electron-builder --win nsis --x64 --ia32"
   },
   "dependencies": {
     "@capacitor/app": "^6.0.3",
@@ -103,6 +104,39 @@
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "electron": "43.7.9",
+    "electron-builder": "26.17.0"
+  },
+  "version": "1.0.0",
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "com.kingsfood.desktop",
+    "productName": "KINGS FOOD",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "KINGS-FOOD-Windows-Setup-${version}.${ext}"
+    }
   }
 }
