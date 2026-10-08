@@ -135,6 +135,7 @@ jobs:
           name: KINGS FOOD APK (latest)
           files: android/app/build/outputs/apk/debug/app-debug.apk
   windows:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[windows-release]')
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
