@@ -31,13 +31,16 @@ jobs:
       - name: Install app dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Build the web app for the native Android bundle
+        run: npm run build
+
       - name: Install Capacitor Android runtime
         run: npm i --no-save @capacitor/cli@6 @capacitor/core@6 @capacitor/android@6
 
       - name: Generate the Android project
         run: |
           npx cap add android
-          python3 - <<'PY'
+          python3 - <<'PY
           from pathlib import Path
           import re
 
@@ -117,6 +120,11 @@ jobs:
           fi
           npx --yes @capacitor/assets@3 generate --android --iconBackgroundColor '#ffffff' --splashBackgroundColor '#ffffff'
           npx cap sync android
+
+      - name: Verify the Android app is using the bundled web build
+        run: |
+          test -f dist/index.html
+          test -f android/app/src/main/assets/public/index.html
 
       - name: Build the APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
