@@ -36,8 +36,10 @@ jobs:
           VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID }}
         run: |
           if [ -z "$VITE_GOOGLE_WEB_CLIENT_ID" ]; then
-            echo "Missing GitHub Actions secret: VITE_GOOGLE_WEB_CLIENT_ID"
-            exit 1
+            echo "No VITE_GOOGLE_WEB_CLIENT_ID supplied."
+            echo "Building without native Google configuration; Google sign-in will remain disabled in this APK instead of opening an external browser."
+          else
+            echo "Building with native Google configuration."
           fi
           npm run build
 
