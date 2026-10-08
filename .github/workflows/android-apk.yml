@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   apk:
@@ -151,7 +152,26 @@ jobs:
       - name: Build Windows 32-bit + 64-bit installer
         run: npm run windows:build
 
-      - name: Verify Windows installer
+      - name: Sign Windows installer with Microsoft Azure Artifact Signing
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Apply Microsoft-trusted Authenticode signature
+        uses: azure/artifact-signing-action@v2
+        with:
+          endpoint: ${{ secrets.AZURE_ARTIFACT_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ secrets.AZURE_SIGNING_ACCOUNT_NAME }}
+          certificate-profile-name: ${{ secrets.AZURE_CERTIFICATE_PROFILE_NAME }}
+          files-folder: ${{ github.workspace }}\\release
+          files-folder-filter: exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      - name: Verify Windows installer signature
         shell: pwsh
         run: |
           $exe = Get-ChildItem -Path release -Filter *.exe | Select-Object -First 1
@@ -160,6 +180,12 @@ jobs:
           }
           Write-Host "Installer: $($exe.FullName)"
           Write-Host "Size: $([math]::Round($exe.Length / 1MB, 2)) MB"
+          $signature = Get-AuthenticodeSignature -FilePath $exe.FullName
+          Write-Host "Signature status: $($signature.Status)"
+          Write-Host "Signer: $($signature.SignerCertificate.Subject)"
+          if ($signature.Status -ne "Valid") {
+            throw "Windows installer signature is not valid."
+          }
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
