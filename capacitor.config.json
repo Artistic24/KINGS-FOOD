@@ -1,13 +1,7 @@
 {
   "appId": "com.kingsfood.app",
   "appName": "KINGS FOOD",
-  "webDir": "android-shell",
-  "server": {
-    "url": "https://kings-marketplace.lovable.app",
-    "cleartext": false,
-    "androidScheme": "https",
-    "errorPath": "error.html"
-  },
+  "webDir": "dist",
   "android": {
     "allowMixedContent": false
   },
@@ -30,7 +24,8 @@
         "facebook": false,
         "apple": false,
         "twitter": false
-      }
+      },
+      "logLevel": 1
     }
   }
 }
