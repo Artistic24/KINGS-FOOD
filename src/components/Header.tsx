@@ -5,11 +5,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBrand, brandInitials } from "@/lib/brand";
+import { AuthDrawer } from "@/components/account/AuthDrawer";
 
 export function Header() {
   const count = useCart((s) => s.items.reduce((n, i) => n + i.quantity, 0));
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const brand = useBrand();
 
@@ -88,13 +90,24 @@ export function Header() {
               <ShieldCheck className="h-5 w-5" />
             </Link>
           )}
-          <Link
-            to={user ? "/account" : "/auth"}
-            className="grid h-10 w-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-muted"
-            aria-label="Account"
-          >
-            <UserIcon className="h-5 w-5" />
-          </Link>
+          {user ? (
+            <Link
+              to="/account"
+              className="grid h-10 w-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-muted"
+              aria-label="Account"
+            >
+              <UserIcon className="h-5 w-5" />
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAuthOpen(true)}
+              className="grid h-10 w-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-muted"
+              aria-label="Log in or sign up"
+            >
+              <UserIcon className="h-5 w-5" />
+            </button>
+          )}
           <Link
             to="/cart"
             className="relative grid h-10 w-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-muted"
@@ -133,6 +146,7 @@ export function Header() {
           </nav>
         </div>
       )}
+      <AuthDrawer open={authOpen} onOpenChange={setAuthOpen} />
     </header>
   );
 }
