@@ -31,12 +31,16 @@ export function AuthDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
   };
 
   const onGoogle = async () => {
+    if (loading) return;
     setLoading(true);
+
     try {
-      if (await isNativeApp()) {
-        await startNativeGoogleSignIn("/");
+      if (isNativeApp()) {
+        // Native Android/iOS only. Never fall back to browser OAuth.
+        await startNativeGoogleSignIn();
         toast.success("Welcome to KINGS FOOD!");
         finish();
+        navigate({ to: "/", replace: true });
         return;
       }
 
@@ -44,12 +48,9 @@ export function AuthDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
         redirect_uri: window.location.origin,
       });
       if (result.error) throw result.error;
-      if (!result.redirected) {
-        toast.success("Google sign-in started");
-        finish();
-      }
+      if (!result.redirected) finish();
     } catch (error: any) {
-      toast.error(error?.message ?? "Google sign-in failed");
+      toast.error(error?.message ?? "Google sign-in failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -57,24 +58,29 @@ export function AuthDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (loading) return;
+
     setLoading(true);
     try {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
-          email,
+          email: email.trim(),
           password,
-          options: { data: { full_name: name }, emailRedirectTo: window.location.origin },
+          options: { data: { full_name: name.trim() }, emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
-        toast.success("Welcome to KINGS FOOD!");
+        toast.success("Account created successfully.");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
         if (error) throw error;
         toast.success("Welcome back!");
       }
       finish();
     } catch (error: any) {
-      toast.error(error?.message ?? "Authentication failed");
+      toast.error(error?.message ?? "Authentication failed.");
     } finally {
       setLoading(false);
     }
@@ -82,63 +88,74 @@ export function AuthDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[92vh] rounded-t-[28px] px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <DrawerHeader className="relative px-2 pb-2 pt-5 text-center">
+      <DrawerContent className="max-h-[94vh] rounded-t-[30px] px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <DrawerHeader className="relative px-2 pb-3 pt-5 text-center">
           <DrawerClose asChild>
             <button
               type="button"
               aria-label="Close authentication"
-              className="absolute right-1 top-3 inline-flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+              className="absolute right-1 top-3 inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted"
             >
               <X className="size-5" />
             </button>
           </DrawerClose>
-          <DrawerTitle className="font-display text-3xl font-normal">
-            {mode === "signin" ? "Log in" : "Sign up"}
+          <DrawerTitle className="font-display text-3xl font-bold">
+            {mode === "signin" ? "Welcome back" : "Create your account"}
           </DrawerTitle>
-          <DrawerDescription className="text-sm">
-            {mode === "signin" ? "Welcome back to KINGS FOOD." : "Create your KINGS FOOD account."}
+          <DrawerDescription>
+            {mode === "signin"
+              ? "Sign in securely to KINGS FOOD."
+              : "Join KINGS FOOD and manage your orders easily."}
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="mx-auto w-full max-w-md space-y-4 px-2 pb-4 pt-2">
+        <div className="mx-auto w-full max-w-md space-y-4 px-2 pb-5 pt-2">
           <Button
             type="button"
             onClick={() => void onGoogle()}
             disabled={loading}
-            className="h-14 w-full rounded-full border border-input bg-card text-base font-semibold text-foreground hover:bg-muted"
+            className="h-14 w-full rounded-2xl border border-input bg-card text-base font-semibold text-foreground hover:bg-muted"
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-              <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.4-1.6 4.2-5.5 4.2-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.5 14.6 2.5 12 2.5 6.7 2.5 2.5 6.7 2.5 12s4.2 9.5 9.5 9.5c5.5 0 9.1-3.8 9.1-9.2 0-.6-.1-1.1-.2-1.6H12z"/>
-            </svg>
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue with Google"}
+            {loading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+                <path fill="#4285F4" d="M21.35 12.23c0-.72-.06-1.42-.18-2.09H12v3.96h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.69 2.91-4.18 2.91-7.26Z" />
+                <path fill="#34A853" d="M12 21.6c2.62 0 4.82-.87 6.43-2.35l-3.14-2.45c-.87.58-1.98.92-3.29.92-2.53 0-4.67-1.71-5.44-4.01H3.32v2.53A9.72 9.72 0 0 0 12 21.6Z" />
+                <path fill="#FBBC05" d="M6.56 13.71a5.83 5.83 0 0 1 0-3.42V7.76H3.32a9.7 9.7 0 0 0 0 8.48l3.24-2.53Z" />
+                <path fill="#EA4335" d="M12 6.28c1.43 0 2.72.49 3.73 1.46l2.8-2.8C16.81 3.39 14.62 2.4 12 2.4a9.72 9.72 0 0 0-8.68 5.36l3.24 2.53 3.24 2.53C7.33 7.99 9.47 6.28 12 6.28Z" />
+              </svg>
+            )}
+            {loading ? "Signing in…" : "Continue with Google"}
           </Button>
 
           <div className="flex items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
+            <span className="h-px flex-1 bg-border" />
+            <span>or</span>
+            <span className="h-px flex-1 bg-border" />
           </div>
 
           <form onSubmit={onSubmit} className="space-y-3">
             {mode === "signup" && (
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" required />
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" autoComplete="name" required />
             )}
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" required />
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password (min 6 chars)" minLength={6} required />
-            <Button type="submit" disabled={loading} className="h-12 w-full rounded-full">
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" autoComplete="email" required />
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password (min 6 chars)" autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={6} required />
+            <Button type="submit" disabled={loading} className="h-13 w-full rounded-2xl">
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {mode === "signin" ? "Continue" : "Create account"}
+              {mode === "signin" ? "Sign in" : "Create account"}
             </Button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground">
             {mode === "signin" ? "New to KINGS FOOD?" : "Already have an account?"}{" "}
-            <button type="button" onClick={() => setMode(mode === "signin" ? "signup" : "signin")} className="font-semibold text-primary hover:underline">
-              {mode === "signin" ? "Sign up" : "Log in"}
+            <button
+              type="button"
+              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+              className="font-semibold text-primary hover:underline"
+            >
+              {mode === "signin" ? "Create an account" : "Sign in"}
             </button>
-          </p>
-
-          <p className="text-center text-xs leading-5 text-muted-foreground">
-            On Android, Google account selection uses the native Credential Manager bottom sheet, so the user stays in the KINGS FOOD app.
           </p>
         </div>
       </DrawerContent>
