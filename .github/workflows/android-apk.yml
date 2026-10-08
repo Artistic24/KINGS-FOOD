@@ -134,3 +134,63 @@ jobs:
           tag_name: apk-latest
           name: KINGS FOOD APK (latest)
           files: android/app/build/outputs/apk/debug/app-debug.apk
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install app dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build Windows 32-bit + 64-bit installer
+        run: npm run windows:build
+
+      - name: Verify Windows installer
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path release -Filter *.exe | Select-Object -First 1
+          if (-not $exe) {
+            throw "No Windows installer was produced."
+          }
+          Write-Host "Installer: $($exe.FullName)"
+          Write-Host "Size: $([math]::Round($exe.Length / 1MB, 2)) MB"
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kingsfood-windows-setup
+          path: release/*.exe
+          if-no-files-found: error
+
+      - name: Publish Windows installer to release
+        if: github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          $version = node -p "require('./package.json').version"
+          $tag = "windows-v$version"
+          $title = "KINGS FOOD Windows v$version"
+          $exe = (Get-ChildItem -Path release -Filter *.exe | Select-Object -First 1).FullName
+          $notes = @"
+          KINGS FOOD Windows desktop release.
+
+          - One NSIS installer containing both Windows x64 (64-bit) and ia32 (32-bit) application builds.
+          - Built with Electron 43.7.9 so the 32-bit Windows target remains supported.
+          - The desktop shell loads the current KINGS FOOD application.
+
+          The installer automatically selects the correct architecture for the Windows machine.
+          "@
+
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $exe --clobber
+          } else {
+            gh release create $tag $exe --title "$title" --notes "$notes" --target $env:GITHUB_SHA
+          }
