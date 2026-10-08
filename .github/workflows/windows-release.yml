@@ -1,0 +1,75 @@
+name: KINGS FOOD Windows Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows-release:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[windows-release]')
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build Windows 32-bit + 64-bit installer
+        run: npm run windows:build
+
+      - name: Verify Windows installer
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path release -Filter *.exe | Select-Object -First 1
+          if (-not $exe) {
+            throw "No Windows installer was produced."
+          }
+          Write-Host "Installer: $($exe.FullName)"
+          Write-Host "Size: $([math]::Round($exe.Length / 1MB, 2)) MB"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KINGS-FOOD-Windows-Setup
+          path: release/*.exe
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          $version = node -p "require('./package.json').version"
+          $tag = "windows-v$version"
+          $title = "KINGS FOOD Windows v$version"
+          $exe = (Get-ChildItem -Path release -Filter *.exe | Select-Object -First 1).FullName
+          $notes = @"
+          KINGS FOOD Windows desktop release.
+
+          - One NSIS installer containing both Windows x64 (64-bit) and ia32 (32-bit) application builds.
+          - Desktop shell loads the current KINGS FOOD application.
+          - Built with Electron 43 so the 32-bit Windows target remains supported.
+
+          The installer automatically selects the correct architecture for the Windows machine.
+          "@
+
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $exe --clobber
+          } else {
+            gh release create $tag $exe --title "$title" --notes "$notes" --target $env:GITHUB_SHA
+          }
