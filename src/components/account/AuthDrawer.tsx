@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { isNativeApp, startNativeGoogleSignIn } from "@/lib/native-auth";
 import {
   Drawer,
@@ -44,11 +43,7 @@ export function AuthDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
         return;
       }
 
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) throw result.error;
-      if (!result.redirected) finish();
+      throw new Error("Google sign-in is available inside the KINGS FOOD mobile app only. Use email and password here to stay on this page.");
     } catch (error: any) {
       toast.error(error?.message ?? "Google sign-in failed. Please try again.");
     } finally {
@@ -110,7 +105,7 @@ export function AuthDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
         </DrawerHeader>
 
         <div className="mx-auto w-full max-w-md space-y-4 px-2 pb-5 pt-2">
-          <Button
+          {isNativeApp() && <Button
             type="button"
             onClick={() => void onGoogle()}
             disabled={loading}
@@ -127,7 +122,7 @@ export function AuthDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
               </svg>
             )}
             {loading ? "Signing in…" : "Continue with Google"}
-          </Button>
+          </Button>}
 
           {isNativeApp() && (
             <div className="flex items-start gap-2.5 rounded-2xl border border-primary/15 bg-primary/5 px-3.5 py-3 text-xs leading-5 text-muted-foreground">
