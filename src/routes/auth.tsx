@@ -10,11 +10,9 @@ import {
   Loader2,
   LockKeyhole,
   Mail,
-  ShieldCheck,
   UserRound,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { isNativeApp, startNativeGoogleSignIn } from "@/lib/native-auth";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
 
@@ -28,17 +26,6 @@ export const Route = createFileRoute("/auth")({
   }),
   component: AuthPage,
 });
-
-function GoogleMark() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" aria-hidden="true">
-      <path fill="#4285F4" d="M21.35 12.23c0-.72-.06-1.42-.18-2.09H12v3.96h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.69 2.91-4.18 2.91-7.26Z" />
-      <path fill="#34A853" d="M12 21.6c2.62 0 4.82-.87 6.43-2.35l-3.14-2.45c-.87.58-1.98.92-3.29.92-2.53 0-4.67-1.71-5.44-4.01H3.32v2.53A9.72 9.72 0 0 0 12 21.6Z" />
-      <path fill="#FBBC05" d="M6.56 13.71a5.83 5.83 0 0 1 0-3.42V7.76H3.32a9.7 9.7 0 0 0 0 8.48l3.24-2.53Z" />
-      <path fill="#EA4335" d="M12 6.28c1.43 0 2.72.49 3.73 1.46l2.8-2.8C16.81 3.39 14.62 2.4 12 2.4a9.72 9.72 0 0 0-8.68 5.36l3.24 2.53C7.33 7.99 9.47 6.28 12 6.28Z" />
-    </svg>
-  );
-}
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -62,27 +49,6 @@ function AuthPage() {
 
   const goAfterAuth = () => navigate({ to: redirect ?? "/", replace: true });
 
-  const onGoogle = async () => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      if (isNativeApp()) {
-        // Native Credential Manager owns the account picker. Do not fall back
-        // to browser OAuth if native sign-in fails or is misconfigured.
-        await startNativeGoogleSignIn();
-        toast.success("Welcome to KINGS FOOD!");
-        goAfterAuth();
-        return;
-      }
-
-      throw new Error("Google sign-in is available inside the KINGS FOOD mobile app only. Use email and password here to stay on this page.");
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Google sign-in failed. Please try again.";
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -196,29 +162,9 @@ function AuthPage() {
               </button>
             </div>
 
-            {isNativeApp() && <button
-              type="button"
-              onClick={() => void onGoogle()}
-              disabled={loading}
-              className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-border bg-background px-4 text-sm font-semibold text-foreground shadow-sm transition hover:border-primary/40 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
-              aria-label="Continue with Google"
-            >
-              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <GoogleMark />}
-              <span>{loading ? "Please wait…" : "Continue with Google"}</span>
-            </button>}
-
-            {isNativeApp() && (
-              <div className="mt-3 flex items-start gap-2.5 rounded-2xl border border-primary/15 bg-primary/5 px-3.5 py-3 text-xs leading-5 text-muted-foreground">
-                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <span>
-                  Choose your Google account in the native sign-in sheet. On Android, it slides up from the bottom; KINGS FOOD will not open Chrome for Google sign-in.
-                </span>
-              </div>
-            )}
-
             <div className="my-6 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               <span className="h-px flex-1 bg-border" />
-              <span>{isNativeApp() ? "or use email" : "sign in with email"}</span>
+              <span>"sign in with email"</span>
               <span className="h-px flex-1 bg-border" />
             </div>
 
