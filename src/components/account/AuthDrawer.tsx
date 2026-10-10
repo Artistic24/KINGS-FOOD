@@ -129,7 +129,7 @@ export function AuthDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
             {loading ? "Signing in…" : "Continue with Google"}
           </Button>
 
-          {isNativeApp() && (\n            <div className="flex items-start gap-2.5 rounded-2xl border border-primary/15 bg-primary/5 px-3.5 py-3 text-xs leading-5 text-muted-foreground">\n              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />\n              <span>Choose your Google account in the secure in-app account sheet. It slides up from the bottom; KINGS FOOD will not open Chrome for Google sign-in.</span>\n            </div>\n          )}\n\n          <div className="flex items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground">
+          {isNativeApp() && (\n            <div className="flex items-start gap-2.5 rounded-2xl border border-primary/15 bg-primary/5 px-3.5 py-3 text-xs leading-5 text-muted-foreground">\n              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />\n              <span>Choose your Google account in the native sign-in sheet. On Android, it slides up from the bottom; KINGS FOOD will not open Chrome for Google sign-in.</span>\n            </div>\n          )}\n\n          <div className="flex items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground">
             <span className="h-px flex-1 bg-border" />
             <span>or</span>
             <span className="h-px flex-1 bg-border" />
