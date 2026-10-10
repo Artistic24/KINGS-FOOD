@@ -14,7 +14,6 @@ import {
   UserRound,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { isNativeApp, startNativeGoogleSignIn } from "@/lib/native-auth";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
@@ -76,11 +75,7 @@ function AuthPage() {
         return;
       }
 
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) throw result.error;
-      if (!result.redirected) goAfterAuth();
+      throw new Error("Google sign-in is available inside the KINGS FOOD mobile app only. Use email and password here to stay on this page.");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Google sign-in failed. Please try again.";
       toast.error(message);
@@ -201,7 +196,7 @@ function AuthPage() {
               </button>
             </div>
 
-            <button
+            {isNativeApp() && <button
               type="button"
               onClick={() => void onGoogle()}
               disabled={loading}
@@ -210,7 +205,7 @@ function AuthPage() {
             >
               {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <GoogleMark />}
               <span>{loading ? "Please wait…" : "Continue with Google"}</span>
-            </button>
+            </button>}
 
             {isNativeApp() && (
               <div className="mt-3 flex items-start gap-2.5 rounded-2xl border border-primary/15 bg-primary/5 px-3.5 py-3 text-xs leading-5 text-muted-foreground">
@@ -223,7 +218,7 @@ function AuthPage() {
 
             <div className="my-6 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               <span className="h-px flex-1 bg-border" />
-              <span>or use email</span>
+              <span>{isNativeApp() ? "or use email" : "sign in with email"}</span>
               <span className="h-px flex-1 bg-border" />
             </div>
 
