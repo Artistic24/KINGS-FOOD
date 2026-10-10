@@ -235,7 +235,7 @@ function AuthPage() {
                     <UserRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                     <input
                       autoComplete="name"
-                      className="h-13 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-base outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                      className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-base outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10"
                       placeholder="Your full name"
                       value={name}
                       onChange={(event) => setName(event.target.value)}
@@ -253,7 +253,7 @@ function AuthPage() {
                     type="email"
                     inputMode="email"
                     autoComplete="email"
-                    className="h-13 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-base outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                    className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-base outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10"
                     placeholder="you@example.com"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
@@ -269,7 +269,7 @@ function AuthPage() {
                   <input
                     type={showPassword ? "text" : "password"}
                     autoComplete={isSignup ? "new-password" : "current-password"}
-                    className="h-13 w-full rounded-2xl border border-border bg-background py-2 pl-12 pr-12 text-base outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                    className="h-14 w-full rounded-2xl border border-border bg-background py-2 pl-12 pr-12 text-base outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10"
                     placeholder={isSignup ? "At least 6 characters" : "Enter your password"}
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
