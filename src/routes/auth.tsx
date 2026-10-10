@@ -216,7 +216,7 @@ function AuthPage() {
               <div className="mt-3 flex items-start gap-2.5 rounded-2xl border border-primary/15 bg-primary/5 px-3.5 py-3 text-xs leading-5 text-muted-foreground">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <span>
-                  Choose your Google account in the secure in-app account sheet. It slides up from the bottom; KINGS FOOD will not open Chrome for Google sign-in.
+                  Choose your Google account in the native sign-in sheet. On Android, it slides up from the bottom; KINGS FOOD will not open Chrome for Google sign-in.
                 </span>
               </div>
             )}
