@@ -1,10 +1,11 @@
 # KINGS FOOD Windows Desktop
 
-The Windows desktop distribution is built as a dual-architecture NSIS installer.
+The Windows desktop distribution is packaged with Electron and NSIS.
 
-- Windows x64 (64-bit)
-- Windows ia32 (32-bit)
-- Electron 43.7.9 for legacy 32-bit Windows compatibility
-- Release artifact: `KINGS-FOOD-Windows-Setup-1.0.0.exe`
+- Target: Windows x64
+- Installer: `KINGS-FOOD-Windows-Setup-1.0.0.exe`
+- Branding: uses `assets/icon-only.png` to generate a Windows multi-size `.ico` for the executable and installer
+- Startup: shows a KINGS FOOD loading screen, then opens the configured live app URL; network/deployment failures display a retryable error page rather than a blank window
+- Build: GitHub Actions workflow `.github/workflows/windows-exe.yml` creates and uploads the installer as `KINGS-FOOD-Windows-Setup`
 
-The desktop shell opens the live KINGS FOOD application at https://kings-marketplace.lovable.app.
+**Important:** the current desktop wrapper loads `https://kings-marketplace.lovable.app`, so it requires internet access and that deployment to remain available. The Windows wrapper is not an offline POS build.
