@@ -1,0 +1,57 @@
+name: Build KINGS FOOD Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "electron/**"
+      - "assets/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/windows-exe.yml"
+  pull_request:
+    paths:
+      - "electron/**"
+      - "assets/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/windows-exe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate a Windows-compatible multi-size KINGS FOOD icon
+        shell: pwsh
+        run: |
+          python -m pip install --disable-pip-version-check pillow
+          python -c "from PIL import Image; Image.open('assets/icon-only.png').convert('RGBA').resize((256,256), Image.Resampling.LANCZOS).save('assets/kings-food.ico', format='ICO', sizes=[(256,256),(128,128),(64,64),(48,48),(32,32),(16,16)])"
+      - name: Build Windows installer
+        run: npm run windows:build
+      - name: Verify installer exists
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem -Path release -Filter "*.exe" -File
+          if (-not $installer) { throw "No Windows installer was produced." }
+          $installer | Format-Table Name, Length
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: KINGS-FOOD-Windows-Setup
+          path: release/*.exe
+          if-no-files-found: error
+          retention-days: 14
