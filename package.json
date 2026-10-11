@@ -108,7 +108,7 @@
     "electron": "43.7.9",
     "electron-builder": "26.17.0"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "electron/main.cjs",
   "build": {
     "appId": "com.kingsfood.desktop",
