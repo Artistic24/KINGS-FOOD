@@ -52,6 +52,22 @@ jobs:
       - name: Build Windows installer
         run: npm run windows:build
 
+      - name: Smoke-test that the desktop app starts
+        shell: pwsh
+        run: |
+          $appPath = Join-Path $PWD "release\win-unpacked\KINGS FOOD.exe"
+          if (-not (Test-Path $appPath)) {
+            throw "The unpacked KINGS FOOD application executable was not produced."
+          }
+          $appProcess = Start-Process -FilePath $appPath -WorkingDirectory (Split-Path $appPath) -PassThru
+          Start-Sleep -Seconds 8
+          $appProcess.Refresh()
+          if ($appProcess.HasExited) {
+            throw "KINGS FOOD exited during the Windows launch smoke test."
+          }
+          Write-Host "KINGS FOOD remained running for 8 seconds."
+          & taskkill.exe /PID $appProcess.Id /T /F | Out-Null
+
       - name: Verify installer exists
         shell: pwsh
         run: |
