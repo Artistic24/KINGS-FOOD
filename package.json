@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "windows:build": "electron-builder --win nsis --x64 --ia32 --publish never"
+    "windows:build": "electron-builder --win nsis --x64 --publish never"
   },
   "dependencies": {
     "@capacitor/app": "^6.0.3",
@@ -118,6 +118,8 @@
     },
     "files": [
       "electron/**/*",
+      "assets/kings-food.ico",
+      "assets/icon-only.png",
       "package.json"
     ],
     "asar": true,
@@ -126,11 +128,11 @@
         {
           "target": "nsis",
           "arch": [
-            "x64",
-            "ia32"
+            "x64"
           ]
         }
-      ]
+      ],
+      "icon": "assets/kings-food.ico"
     },
     "nsis": {
       "oneClick": false,
